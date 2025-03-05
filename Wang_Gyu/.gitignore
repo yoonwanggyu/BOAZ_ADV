@@ -1,5 +1,16 @@
+# 환경 변수
 .env
+
 README.md
 image
+
+# 파일
 1-s2.0-S0952818016300204-main.pdf
 1-s2.0-S0952818022000101-main.pdf
+samsung.pdf
+
+# 파일
+split_docs
+
+# 캐시
+__pycache__
