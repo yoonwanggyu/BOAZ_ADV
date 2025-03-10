@@ -11,6 +11,9 @@ samsung.pdf
 
 # 파일
 split_docs
+first_images
+second_images
 
 # 캐시
 __pycache__
+
