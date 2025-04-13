@@ -8,3 +8,5 @@ teddy_note
 # 캐시
 __pycache__
 
+# 불필요
+.DS_Store
