@@ -10,3 +10,9 @@ __pycache__
 
 # 불필요
 .DS_Store
+guideline.pdf
+answer.json
+grouped_pages.json
+output.csv
+question_context.json
+data
