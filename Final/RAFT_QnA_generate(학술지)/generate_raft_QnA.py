@@ -17,8 +17,8 @@ client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))  # 본인 API KEY 설정
 P_MIX_GOLDEN   = 0.4    # Noise sample에 Golden 컨텍스트를 섞을 확률 (실험시 조정)
 K_DISTRACTORS  = 5      # 생성할 distractor 수 (실험시 조정)
 M_RANK_SAMPLES = 20     # 순위 샘플링 횟수 (실험시 조정)
-INPUT_CSV      = r"전체 학술지 병합 CSV 경로"
-OUTPUT_CSV     = r"Output CSV 경로"
+INPUT_CSV      = r"C:\Users\user\Desktop\BOAZ\23기 분석 ADV\소아마취 챗봇 프로젝트\RAFT_QA_Generation\학술지 QA 데이터 생성\학술지_all_final.csv"
+OUTPUT_CSV     = r"C:\Users\user\Desktop\BOAZ\23기 분석 ADV\소아마취 챗봇 프로젝트\RAFT_QA_Generation\학술지 QA 데이터 생성\학술지_QA.csv"
 
 def open_csv_with_fallback(path, encodings=("utf-8-sig", "cp949", "utf-8")):
     """
@@ -103,18 +103,16 @@ def main():
                 for d, s in sorted(zip(distracts, scores), key=lambda x: x[1], reverse=True)
             ]
 
-            # 6) 골든 포함 여부에 따라 final_ctx 구성
-            #    - mix: 골든 1개 + 상위 4개 노이즈
-            #    - no mix: 상위 5개 노이즈
+            # 6) p에 따라 golden 섞기 or noise-only
             if random.random() < P_MIX_GOLDEN:
                 mix_flag = "O"
-                # 상위 4개 노이즈
-                top_noise = [v["distractor"] for v in validity[:4]]
+                # golden + 상위 (K_DISTRACTORS-1)개 노이즈
+                top_noise = [v["distractor"] for v in validity[:K_DISTRACTORS-1]]
                 final_ctx = golden + top_noise
             else:
                 mix_flag = "X"
-                # 상위 5개 노이즈
-                final_ctx = [v["distractor"] for v in validity[:5]]
+                # 상위 K_DISTRACTORS개 노이즈
+                final_ctx = [v["distractor"] for v in validity[:K_DISTRACTORS]]
 
             # 6.1) 매 행마다 관련 문서 순서 셔플
             random.shuffle(final_ctx)
