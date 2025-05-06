@@ -14,11 +14,11 @@ load_dotenv()
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))  # 본인 API KEY 설정
 
 # 2) 사용자 설정
-P_MIX_GOLDEN   = 0.4    # Noise sample에 Golden 컨텍스트를 섞을 확률 (실험시 조정)
-K_DISTRACTORS  = 5      # 생성할 distractor 수 (실험시 조정)
-M_RANK_SAMPLES = 20     # 순위 샘플링 횟수 (실험시 조정)
-INPUT_CSV      = r"C:\Users\user\Desktop\BOAZ\23기 분석 ADV\소아마취 챗봇 프로젝트\RAFT_QA_Generation\학술지 QA 데이터 생성\학술지_all_final.csv"
-OUTPUT_CSV     = r"C:\Users\user\Desktop\BOAZ\23기 분석 ADV\소아마취 챗봇 프로젝트\RAFT_QA_Generation\학술지 QA 데이터 생성\학술지_QA.csv"
+P_MIX_GOLDEN   = 0.2   # Noise sample에 Golden 컨텍스트를 섞을 확률 (실험시 조정)
+K_DISTRACTORS  = 5    # 생성할 distractor 수 (실험시 조정)
+M_RANK_SAMPLES = 10     # 순위 샘플링 횟수 (실험시 조정)
+INPUT_CSV      = r"C:\Users\user\Desktop\BOAZ\23기 분석 ADV\소아마취 챗봇 프로젝트\RAFT_QA_Generation\학술지 QA 데이터 생성\학술지_train_data.csv"
+OUTPUT_CSV     = r"C:\Users\user\Desktop\BOAZ\23기 분석 ADV\소아마취 챗봇 프로젝트\RAFT_QA_Generation\학술지 QA 데이터 생성\result\학술지_train_data_result(재원원).csv"
 
 def open_csv_with_fallback(path, encodings=("utf-8-sig", "cp949", "utf-8")):
     """
@@ -128,7 +128,7 @@ def main():
             ])
 
     # 8) 결과 저장
-    with open(OUTPUT_CSV, 'w', newline='', encoding='utf-8') as f:
+    with open(OUTPUT_CSV, 'w', newline='', encoding='utf-8-sig') as f:
         writer = csv.writer(f)
         writer.writerow(["파일명", "질문", "관련 문서", "답변", "Golden 포함", "Plausibility"])
         writer.writerows(rows)
