@@ -29,6 +29,10 @@ def build_graph(model, prompt, retriever):
     def llm_answer(state: ChatbotState):
         question = state["question"]
         docs = state["documents"]
+
+        # 모델이 Llama일 때 활성화
+        docs = "\n\n".join(doc.page_content.strip() for doc in docs)
+
         formatted = prompt.format(context=docs, question=question)
         response = model.invoke(formatted)
         response_text = response.content if isinstance(response, AIMessage) else str(response)
