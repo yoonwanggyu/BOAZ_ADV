@@ -1,6 +1,6 @@
 from langchain_core.prompts import PromptTemplate
 
-def build_prompt():
+def build_GPT_prompt():
     return PromptTemplate.from_template(
         """You are an assistant specialized in question-answering tasks based on medical research papers.
     Use the following pieces of retrieved context to answer the question. If you don't know the answer, simply say that you don't know.
@@ -40,3 +40,19 @@ def build_prompt():
 
     #Answer:"""
     )
+
+def build_Llama_prompt():
+    return PromptTemplate.from_template(
+"""
+<|begin_of_text|>
+<|start_header_id|>system<|end_header_id|>
+You are an assistant specialized in question-answering tasks based on medical research papers.
+Use the following pieces of retrieved context to answer the question. If you don't know the answer, simply say that you don't know.
+Answer in Korean.
+<|start_header_id|>user<|end_header_id|>
+Context: {context}
+Question: {question}
+<|eot_id|>
+<|start_header_id|>assistant<|end_header_id|>
+Answer:
+""")
