@@ -1,3 +1,4 @@
 #github에 내가 안 올릴것들 env, 파일의 pdf, rag cash .. 
 .env
 *.json
+*.md

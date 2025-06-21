@@ -1,0 +1,21 @@
+Flask==2.3.3
+Werkzeug==2.3.7
+Jinja2==3.1.2
+MarkupSafe==2.1.3
+itsdangerous==2.1.2
+click==8.1.7
+blinker==1.6.3
+
+# Neo4j + Pinecone MCP 시스템 의존성
+neo4j==5.14.1
+pinecone-client==2.2.4
+openai==1.3.7
+requests==2.31.0
+python-dotenv==1.0.0
+
+# MCP 관련
+mcp==1.0.0
+asyncio-mqtt==0.16.1
+
+# 추가 유틸리티
+python-dateutil==2.8.2 
