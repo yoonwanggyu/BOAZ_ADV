@@ -44,58 +44,77 @@ def sample_rankings(client,
                     distractors: List[str],
                     M: int = 10,
                     model: str = "gpt-4.1-mini") -> List[List[int]]:
+    
+    if not distractors:
+        print("경고: 디스트랙터가 없습니다.")
+        return []
 
     rankings = []
     k = len(distractors)
+    print(f"디스트랙터 개수: {k}")
 
     # 외부에서 정의된 ranking_prompt 템플릿 사용
-    for _ in range(M):
+    for attempt in range(M):
         prompt = ranking_prompt.format(
             question=question,
             k=k, # distractor 개수 
             distractors=json.dumps(distractors, ensure_ascii=False)
         )
-        resp = client.chat.completions.create(
-            model=model,
-            messages=[
-                {"role": "system", "content": "Output only the JSON array. Do not include any additional text or explanation."},
-                {"role": "user",   "content": prompt}
-            ],
-            temperature=0.2 # temperature 파라미터 조절 필요
-        )
-        raw = resp.choices[0].message.content
-
         try:
+            resp = client.chat.completions.create(
+                model=model,
+                messages=[
+                    {"role": "system", "content": "Output only the JSON array. Do not include any additional text or explanation."},
+                    {"role": "user",   "content": prompt}
+                ],
+                temperature=0.2 # temperature 파라미터 조절 필요
+            )
+            raw = resp.choices[0].message.content
+            print(f"랭킹 응답 {attempt+1}: {raw}")
+
             arr = json.loads(raw)
-            if isinstance(arr, list) and len(arr) == k and all(isinstance(i, int) for i in arr):
-                rankings.append(arr)
-        except Exception:
+            if isinstance(arr, list) and all(isinstance(i, int) for i in arr):
+                # 인덱스 범위 체크 및 교정
+                valid_arr = [i for i in arr if 0 <= i < k]
+                
+                # 모든 인덱스가 유효하고 필요한 개수만큼 있으면 추가
+                if len(valid_arr) == k and len(set(valid_arr)) == k:
+                    rankings.append(valid_arr)
+                    print(f"유효한 랭킹 추가: {valid_arr}")
+                else:
+                    print(f"유효하지 않은 랭킹 무시: {arr}")
+        except Exception as e:
+            print(f"랭킹 샘플링 오류: {e}")
             continue
 
-    return rankings # 응답 원문
+    print(f"최종 랭킹 개수: {len(rankings)}")
+    return rankings
 
 
 def compute_borda_plausibility(rankings: List[List[int]], alpha: float = 1e-4) -> List[float]:
     # 순위 데이터 없으면 빈 리스트 반환
     if not rankings:
+        print("경고: 랭킹 데이터가 없습니다.")
         return []
 
     k = len(rankings[0]) # 후보 수
     scores = [0] * k # plausibility 점수 저장할 리스트 초기화
+    
+    print(f"랭킹 데이터: {rankings}")
+    print(f"점수 배열 크기: {k}")
 
-
-    for ranking in rankings:
+    for i, ranking in enumerate(rankings):
         for position, idx in enumerate(ranking):
-            # 수집된 순위 리스트를 Borda count 방식으로 집계하여 0~1 범위 plausibility 점수를 계산
-            # position = 0 → 가장 그럴듯한 후보, position = k-1 → 가장 덜 그럴듯한 후보
-            # k=3일 때:
-            # position=0 인 후보(idx)에 3-0 = 3점
-            # position=1 인 후보(idx)에 3-1 = 2점
-            # position=2 인 후보(idx)에 3-2 = 1점
-            scores[idx] += (k - position)
+            # 인덱스 범위 검증
+            if 0 <= idx < k:
+                scores[idx] += (k - position)
+            else:
+                print(f"경고: 랭킹 {i}에서 인덱스 {idx}가 범위를 벗어남 (유효 범위: 0-{k-1})")
+    
+    print(f"계산된 점수: {scores}")
 
-    # M 등에 따라서 절대 크기 달려져서 정규화 진행해서 0~1 사이의 SCORE로 변환
-    lo, hi = min(scores), max(scores)
+    # 정규화
+    lo, hi = min(scores) if scores else (0, 0), max(scores) if scores else (0, 0)
     if hi == lo:
         return [1.0] * k
 
