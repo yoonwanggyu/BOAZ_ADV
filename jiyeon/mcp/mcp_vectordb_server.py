@@ -59,7 +59,7 @@ mcp = FastMCP(
 @mcp.tool()
 async def VectorDB_retriever(query: str):
 
-    retriever = create_retriever()
+    retriever = load_pinecone_retriever()
 
     retrieved_docs = retriever.invoke(query)
 
