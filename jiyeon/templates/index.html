@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>의료 AI 어시스턴트</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .chat-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            margin: 20px auto;
+            max-width: 1000px;
+            height: 80vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .chat-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 20px 20px 0 0;
+            text-align: center;
+        }
+        
+        .chat-header h1 {
+            margin: 0;
+            font-size: 1.8rem;
+            font-weight: 600;
+        }
+        
+        .chat-header .subtitle {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            margin-top: 5px;
+        }
+        
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            background: #f8f9fa;
+        }
+        
+        .message {
+            margin-bottom: 20px;
+            display: flex;
+            align-items: flex-start;
+        }
+        
+        .message.user {
+            justify-content: flex-end;
+        }
+        
+        .message.assistant {
+            justify-content: flex-start;
+        }
+        
+        .message-content {
+            max-width: 70%;
+            padding: 15px 20px;
+            border-radius: 20px;
+            position: relative;
+            word-wrap: break-word;
+        }
+        
+        .message.user .message-content {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-bottom-right-radius: 5px;
+        }
+        
+        .message.assistant .message-content {
+            background: white;
+            color: #333;
+            border: 1px solid #e9ecef;
+            border-bottom-left-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .message-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 10px;
+            font-size: 1.2rem;
+        }
+        
+        .message.user .message-avatar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .message.assistant .message-avatar {
+            background: #28a745;
+            color: white;
+        }
+        
+        .message-time {
+            font-size: 0.75rem;
+            opacity: 0.7;
+            margin-top: 5px;
+            text-align: center;
+        }
+        
+        .chat-input {
+            padding: 20px;
+            background: white;
+            border-radius: 0 0 20px 20px;
+            border-top: 1px solid #e9ecef;
+        }
+        
+        .input-group {
+            position: relative;
+        }
+        
+        .form-control {
+            border-radius: 25px;
+            border: 2px solid #e9ecef;
+            padding: 15px 20px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        .form-control:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+        
+        .btn-send {
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            color: white;
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-send:hover {
+            transform: scale(1.1);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-send:disabled {
+            opacity: 0.6;
+            transform: none;
+        }
+        
+        .typing-indicator {
+            display: none;
+            padding: 15px 20px;
+            background: white;
+            border-radius: 20px;
+            border: 1px solid #e9ecef;
+            margin-bottom: 20px;
+            border-bottom-left-radius: 5px;
+        }
+        
+        .typing-dots {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #667eea;
+            animation: typing 1.4s infinite ease-in-out;
+        }
+        
+        .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+        .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+        
+        @keyframes typing {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1); }
+        }
+        
+        .system-status {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 10px 15px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            font-size: 0.8rem;
+            z-index: 1000;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        
+        .status-online { background: #28a745; }
+        .status-offline { background: #dc3545; }
+        .status-simulation { background: #ffc107; }
+        
+        .example-queries {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px auto;
+            max-width: 1000px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+        
+        .example-queries h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+        
+        .query-example {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 10px;
+            padding: 10px 15px;
+            margin: 5px 0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .query-example:hover {
+            background: #667eea;
+            color: white;
+            transform: translateX(5px);
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .spinner-border {
+            color: #667eea;
+        }
+        
+        @media (max-width: 768px) {
+            .chat-container {
+                margin: 10px;
+                height: 90vh;
+            }
+            
+            .message-content {
+                max-width: 85%;
+            }
+            
+            .system-status {
+                position: static;
+                margin: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 시스템 상태 표시 -->
+    <div class="system-status">
+        <span class="status-indicator" id="statusIndicator"></span>
+        <span id="statusText">시스템 상태 확인 중...</span>
+    </div>
+
+    <!-- 예시 질문 -->
+    <div class="example-queries">
+        <h3><i class="fas fa-lightbulb"></i> 예시 질문</h3>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="query-example" onclick="sendExample('P001 환자의 당뇨병 치료에 대해 알려줘')">
+                    <i class="fas fa-user-injured"></i> P001 환자의 당뇨병 치료
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="query-example" onclick="sendExample('이영희 환자의 고혈압 관리 방법을 slack으로 보내줘')">
+                    <i class="fab fa-slack"></i> Slack으로 고혈압 관리법 전송
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="query-example" onclick="sendExample('P001 환자의 관계 정보를 조회해줘')">
+                    <i class="fas fa-project-diagram"></i> 환자 관계 정보 조회
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 챗봇 컨테이너 -->
+    <div class="chat-container">
+        <!-- 헤더 -->
+        <div class="chat-header">
+            <h1><i class="fas fa-hospital"></i> 의료 AI 어시스턴트</h1>
+            <div class="subtitle">Neo4j + Pinecone + MCP 기반 의료 상담 시스템</div>
+        </div>
+
+        <!-- 메시지 영역 -->
+        <div class="chat-messages" id="chatMessages">
+            <!-- 환영 메시지 -->
+            <div class="message assistant">
+                <div class="message-avatar">
+                    <i class="fas fa-robot"></i>
+                </div>
+                <div class="message-content">
+                    안녕하세요! 의료 AI 어시스턴트입니다. 🏥<br><br>
+                    저는 Neo4j 환자 지식그래프와 Pinecone 의료 지식 검색을 통해<br>
+                    정확하고 개인화된 의료 상담을 제공합니다.<br><br>
+                    <strong>사용 가능한 기능:</strong><br>
+                    • 환자 정보 조회 및 관계 분석<br>
+                    • 의료 지식 검색 및 상담<br>
+                    • Slack을 통한 결과 전송<br><br>
+                    무엇을 도와드릴까요?
+                </div>
+            </div>
+        </div>
+
+        <!-- 타이핑 표시기 -->
+        <div class="typing-indicator" id="typingIndicator">
+            <div class="typing-dots">
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+            </div>
+            <span style="margin-left: 10px;">AI가 답변을 생성하고 있습니다...</span>
+        </div>
+
+        <!-- 입력 영역 -->
+        <div class="chat-input">
+            <div class="input-group">
+                <input type="text" class="form-control" id="messageInput" 
+                       placeholder="질문을 입력하세요... (예: P001 환자의 당뇨병 치료에 대해 알려줘)" 
+                       onkeypress="handleKeyPress(event)">
+                <button class="btn btn-send" id="sendButton" onclick="sendMessage()">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 로딩 오버레이 -->
+    <div class="loading" id="loading">
+        <div class="spinner-border" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <p>시스템을 초기화하고 있습니다...</p>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let isProcessing = false;
+
+        // 페이지 로드 시 초기화
+        document.addEventListener('DOMContentLoaded', function() {
+            checkSystemStatus();
+            loadChatHistory();
+        });
+
+        // 시스템 상태 확인
+        async function checkSystemStatus() {
+            try {
+                const response = await fetch('/status');
+                const data = await response.json();
+                
+                const statusIndicator = document.getElementById('statusIndicator');
+                const statusText = document.getElementById('statusText');
+                
+                if (data.system_available && data.assistant_initialized) {
+                    statusIndicator.className = 'status-indicator status-online';
+                    statusText.textContent = '시스템 온라인';
+                } else if (data.system_available) {
+                    statusIndicator.className = 'status-indicator status-simulation';
+                    statusText.textContent = '시뮬레이션 모드';
+                } else {
+                    statusIndicator.className = 'status-indicator status-offline';
+                    statusText.textContent = '시스템 오프라인';
+                }
+            } catch (error) {
+                console.error('시스템 상태 확인 실패:', error);
+                document.getElementById('statusIndicator').className = 'status-indicator status-offline';
+                document.getElementById('statusText').textContent = '연결 오류';
+            }
+        }
+
+        // 대화 기록 로드
+        async function loadChatHistory() {
+            try {
+                const response = await fetch('/history');
+                const data = await response.json();
+                
+                if (data.success && data.history.length > 0) {
+                    const chatMessages = document.getElementById('chatMessages');
+                    
+                    // 환영 메시지 제거
+                    chatMessages.innerHTML = '';
+                    
+                    // 대화 기록 추가
+                    data.history.forEach(message => {
+                        addMessageToChat(message.role, message.message, message.timestamp);
+                    });
+                    
+                    scrollToBottom();
+                }
+            } catch (error) {
+                console.error('대화 기록 로드 실패:', error);
+            }
+        }
+
+        // 메시지 전송
+        async function sendMessage() {
+            const messageInput = document.getElementById('messageInput');
+            const message = messageInput.value.trim();
+            
+            if (!message || isProcessing) return;
+            
+            // 사용자 메시지 추가
+            addMessageToChat('user', message);
+            messageInput.value = '';
+            
+            // 타이핑 표시기 표시
+            showTypingIndicator();
+            
+            try {
+                isProcessing = true;
+                document.getElementById('sendButton').disabled = true;
+                
+                const response = await fetch('/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ message: message })
+                });
+                
+                const data = await response.json();
+                
+                // 타이핑 표시기 숨기기
+                hideTypingIndicator();
+                
+                if (data.success) {
+                    addMessageToChat('assistant', data.message, data.timestamp);
+                } else {
+                    addMessageToChat('assistant', '죄송합니다. 오류가 발생했습니다: ' + data.message);
+                }
+                
+            } catch (error) {
+                console.error('메시지 전송 실패:', error);
+                hideTypingIndicator();
+                addMessageToChat('assistant', '네트워크 오류가 발생했습니다. 다시 시도해주세요.');
+            } finally {
+                isProcessing = false;
+                document.getElementById('sendButton').disabled = false;
+                messageInput.focus();
+            }
+        }
+
+        // 예시 질문 전송
+        function sendExample(example) {
+            document.getElementById('messageInput').value = example;
+            sendMessage();
+        }
+
+        // 키보드 이벤트 처리
+        function handleKeyPress(event) {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                sendMessage();
+            }
+        }
+
+        // 채팅에 메시지 추가
+        function addMessageToChat(role, message, timestamp = null) {
+            const chatMessages = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${role}`;
+            
+            const avatar = document.createElement('div');
+            avatar.className = 'message-avatar';
+            avatar.innerHTML = role === 'user' ? '<i class="fas fa-user"></i>' : '<i class="fas fa-robot"></i>';
+            
+            const content = document.createElement('div');
+            content.className = 'message-content';
+            content.innerHTML = message.replace(/\n/g, '<br>');
+            
+            messageDiv.appendChild(avatar);
+            messageDiv.appendChild(content);
+            
+            if (timestamp) {
+                const timeDiv = document.createElement('div');
+                timeDiv.className = 'message-time';
+                timeDiv.textContent = new Date(timestamp).toLocaleString('ko-KR');
+                messageDiv.appendChild(timeDiv);
+            }
+            
+            chatMessages.appendChild(messageDiv);
+            scrollToBottom();
+        }
+
+        // 타이핑 표시기 표시
+        function showTypingIndicator() {
+            document.getElementById('typingIndicator').style.display = 'block';
+            scrollToBottom();
+        }
+
+        // 타이핑 표시기 숨기기
+        function hideTypingIndicator() {
+            document.getElementById('typingIndicator').style.display = 'none';
+        }
+
+        // 채팅창 맨 아래로 스크롤
+        function scrollToBottom() {
+            const chatMessages = document.getElementById('chatMessages');
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        // 대화 기록 삭제
+        async function clearChat() {
+            try {
+                const response = await fetch('/clear');
+                const data = await response.json();
+                
+                if (data.success) {
+                    const chatMessages = document.getElementById('chatMessages');
+                    chatMessages.innerHTML = '';
+                    
+                    // 환영 메시지 다시 추가
+                    addMessageToChat('assistant', 
+                        '안녕하세요! 의료 AI 어시스턴트입니다. 🏥<br><br>' +
+                        '저는 Neo4j 환자 지식그래프와 Pinecone 의료 지식 검색을 통해<br>' +
+                        '정확하고 개인화된 의료 상담을 제공합니다.<br><br>' +
+                        '<strong>사용 가능한 기능:</strong><br>' +
+                        '• 환자 정보 조회 및 관계 분석<br>' +
+                        '• 의료 지식 검색 및 상담<br>' +
+                        '• Slack을 통한 결과 전송<br><br>' +
+                        '무엇을 도와드릴까요?'
+                    );
+                }
+            } catch (error) {
+                console.error('대화 기록 삭제 실패:', error);
+            }
+        }
+
+        // MCP 도구 목록 조회
+        async function showTools() {
+            try {
+                const response = await fetch('/tools');
+                const data = await response.json();
+                
+                if (data.success) {
+                    let toolsText = '<strong>사용 가능한 MCP 도구:</strong><br><br>';
+                    data.tools.forEach(tool => {
+                        toolsText += `• <strong>${tool.name}</strong>: ${tool.description}<br>`;
+                    });
+                    addMessageToChat('assistant', toolsText);
+                } else {
+                    addMessageToChat('assistant', 'MCP 도구 정보를 가져올 수 없습니다: ' + data.error);
+                }
+            } catch (error) {
+                console.error('MCP 도구 조회 실패:', error);
+                addMessageToChat('assistant', 'MCP 도구 정보를 가져올 수 없습니다.');
+            }
+        }
+    </script>
+</body>
+</html> 
