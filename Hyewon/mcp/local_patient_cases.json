@@ -1,0 +1,110 @@
+[
+  {
+    "case": "APM-12-052",
+    "full_name": "김세민",
+    "age": "3세 남아",
+    "diagnosis": "무형성 직장",
+    "surgery": "천공루 형성술",
+    "anesthesia": "전신마취 + 기관삽관",
+    "agent": [
+      "Sevoflurane",
+      "Rocuronium"
+    ],
+    "complication": "기관삽관 어려움"
+  },
+  {
+    "case": "APM-12-147",
+    "full_name": "이하준",
+    "age": "4개월 남아",
+    "diagnosis": "교정되지 않은 심장질환",
+    "surgery": "검사 목적 심도자 삽입",
+    "anesthesia": "전신마취",
+    "agent": [
+      "Etomidate",
+      "Rocuronium",
+      "Isoflurane"
+    ],
+    "notes": "심부전 상태, 삽관 후 저혈압"
+  },
+  {
+    "case": "APM-12-240",
+    "full_name": "박지우",
+    "age": "10세 여아",
+    "diagnosis": "뇌병변, 간질",
+    "surgery": "급성 충수염 수술",
+    "anesthesia": "전신마취",
+    "agent": [
+      "Propofol",
+      "Fentanyl"
+    ],
+    "complication": "항경련제 상호작용 가능성 고려됨"
+  },
+  {
+    "case": "APM-12-243",
+    "full_name": "최도윤",
+    "age": "11세 남아",
+    "diagnosis": "거대방광요관역류",
+    "surgery": "요관 재건술",
+    "anesthesia": "전신마취",
+    "agent": [
+      "Sevoflurane"
+    ],
+    "notes": "과거 마취력 있음, 항생제 전처치 포함"
+  },
+  {
+    "case": "APM-12-335",
+    "full_name": "정서연",
+    "age": "6세 여아",
+    "diagnosis": "폐렴",
+    "surgery": "진단 목적 기관지내시경",
+    "anesthesia": "전신마취",
+    "notes": "고위험 흡인 환자, 분비물 과다"
+  },
+  {
+    "case": "APM-12-339",
+    "full_name": "백유진",
+    "age": "3세 여아",
+    "diagnosis": "측만증 수술 예정",
+    "surgery": "중심 정맥 삽입",
+    "anesthesia": "전신마취",
+    "agent": [
+      "Ketamine",
+      "Midazolam"
+    ],
+    "notes": "협조 어려움, 진정 목적 마취 시행"
+  },
+  {
+    "case": "APM-13-173",
+    "full_name": "장현우",
+    "age": "8세 남아",
+    "diagnosis": "유전성 대사질환",
+    "surgery": "위장관 삽입술",
+    "anesthesia": "전신마취",
+    "notes": "대사 이상으로 약제 반응 감시 필요"
+  },
+  {
+    "case": "APM-14-040",
+    "full_name": "윤하린",
+    "age": "2세 여아",
+    "diagnosis": "중이염 및 기관지염",
+    "surgery": "이관 삽입술",
+    "anesthesia": "전신마취",
+    "agent": [
+      "Sevoflurane"
+    ],
+    "notes": "감기 병력으로 후두경련 위험 고려"
+  },
+  {
+    "case": "APM-14-044",
+    "full_name": "오민준",
+    "age": "7세 남아",
+    "diagnosis": "뇌수종",
+    "surgery": "배액관 교체",
+    "anesthesia": "전신마취",
+    "agent": [
+      "Propofol",
+      "Rocuronium"
+    ],
+    "notes": "뇌압 상승 위험성 고려하여 유도 속도 조절"
+  }
+]
