@@ -67,4 +67,3 @@ def neo4j_retriever(question: str, top_k: int = 3) -> List[Dict]:
 
 if __name__ == "__main__":
     mcp.run(transport="stdio")
-
