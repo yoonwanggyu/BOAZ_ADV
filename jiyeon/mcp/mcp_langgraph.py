@@ -7,6 +7,7 @@ from langchain_community.document_transformers import LongContextReorder
 from langgraph.checkpoint.memory import MemorySaver
 from langchain_core.messages import AIMessage
 from langgraph.graph import StateGraph, START, END
+from langchain_core.runnables import RunnableConfig
 from dotenv import load_dotenv
 from langchain_openai import ChatOpenAI
 from mcp import ClientSession, StdioServerParameters
@@ -710,5 +711,4 @@ async def main():
         await interactive_chat()
 
 if __name__ == "__main__":
-    from langchain_core.runnables import RunnableConfig
     asyncio.run(main())
