@@ -1,29 +1,37 @@
 # 환경 변수
 .env
-
 README.md
-image
 
 # 파일
-samsung
-1-s2.0-S0952818016300204-main.pdf
-1-s2.0-S0952818022000101-main.pdf
-1-s2.0-S0952818022003701-main.pdf
-1-s2.0-S0952818024000333-main.pdf
-1-s2.0-S0952818024001375-main.pdf
-1-s2.0-S2352556824000626-main.pdf
-samsung.pdf
-table_csv
-GUIDELINES
-
-# 파일
-split_docs
-first_images
-second_images
-analysis_results
-images
 teddy_note
 
 # 캐시
 __pycache__
 
+# 불필요
+.DS_Store
+guideline.pdf
+answer.json
+grouped_pages.json
+output.csv
+question_context.json
+data
+20240416_data_v1
+20240424_data_v2
+mps_test.ipynb
+pubmed_airway_management_infant.csv
+소아마취_QA(점검완)_윤왕규.xlsx
+merged_all.xlsx
+학술지
+학술지_upstage
+학술지_QnA.csv
+학술지_QnA_1.csv
+patient_surgery_summary_filled 복사본.csv
+
+# db
+edit_db
+origin_db
+
+마취관련_키워드_샘플.xlsx
+patient_data.csv
+Neo4j-def8c240-Created-2025-07-03.txt
