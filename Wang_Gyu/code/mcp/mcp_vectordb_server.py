@@ -91,7 +91,7 @@ async def VectorDB_retriever(query: str):
 
     retriever = create_retriever()
 
-    retrieved_docs = retriever.invoke(query)
+    retrieved_docs = await retriever.ainvoke(query)
 
     # return "\n".join([doc.page_content for doc in retrieved_docs])
     return "\n\n".join(doc.page_content.strip() for doc in retrieved_docs)
