@@ -27,6 +27,7 @@ ROUTER_PROMPT = """
 함수 호출 형식에 맞춰 JSON을 생성하세요. `neo4j_query`와 `vector_db_query`는 해당 흐름에 필요할 때만 생성합니다.
 """
 
+
 # --- 순차 흐름에서 VectorDB 쿼리 생성을 위한 프롬프트 ---
 VECTOR_QUERY_GEN_PROMPT = """
 당신은 사용자의 질문과 환자 데이터를 바탕으로 Vector DB에서 관련 의학 정보를 찾기 위한 최적의 검색어를 생성하는 AI입니다.
@@ -44,15 +45,13 @@ VECTOR_QUERY_GEN_PROMPT = """
 검색어:
 """
 
-LLM_SYSTEM_PROMPT = """
+
+# --- 최종 답변 생성을 위한 프롬프트 ---
+LLM_SYSTEM_PROMPTY = """
 # INSTRUCTION
 당신은 의료 데이터에 특화된 전문가 AI입니다.
 주어진 데이터베이스 검색 결과를 바탕으로 사용자의 질문에 대해 의학적으로 정확하고 이해하기 쉽게 답변을 생성해주세요.
-
-1. 🔎 Neo4j 검색 결과: 구조화된 환자 관련 정보 (예: 수술 이력, 검사 기록 등)
-2. 📚 VectorDB 검색 결과: 일반적인 의학 지식 (예: 증상 설명, 치료 가이드라인 등)
-
-- 한 쪽의 결과만 존재할 경우, 해당 결과만을 바탕으로 답변하되, 정보의 한계에 대해 언급하지 말고 최대한 성실히 답변하세요.
+- 한 쪽의 결과만 존재할 경우, 해당 결과만을 바탕으로 답변하세요.
 - 결과가 너무 적거나 애매하더라도 반드시 유의미한 설명을 제공하려고 노력하세요.
 - 불필요한 서론 없이, 질문에 바로 답변하세요.
 
@@ -69,6 +68,8 @@ LLM_SYSTEM_PROMPT = """
 # 답변:
 """
 
+
+# --- 슬랙 사용 여부 결정을 위한 프롬프트 ---
 LLM_DECISION_SLACK = """
 You are a decision-making assistant for Slack dispatch.
 If the user asks to send a message or question to a specific person via Slack (e.g., '~에게 보내줘', '~에게 전송해줘'),

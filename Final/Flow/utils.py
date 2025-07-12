@@ -1,5 +1,4 @@
-
-
+from state import *
 
 # --------
 tool_router_schema = {
@@ -31,8 +30,39 @@ tool_router_schema = {
 }
 
 # --------
-def determine_slack_usage(query: str) -> str:
-    SEND_COMMANDS = ["보내줘", "전송해줘", "전달해줘"]
-    return 'Yes' if any(cmd in query for cmd in SEND_COMMANDS) or "에게" in query else 'No'
+def route_after_router(state: ChatbotState) -> str:
+    """라우터의 결정에 따라 다음 노드로 분기하기 위해 flow_type을 반환"""
+    flow_type = state['flow_type']
+    print(f"--- Routing Decision: {flow_type} ---")
+    # 이 함수는 flow_type 문자열 자체를 반환하고,
+    # add_conditional_edges의 딕셔너리가 이 값을 키로 사용해 실제 목적지 노드를 찾습니다.
+    return flow_type
+
+
+def route_after_neo4j(state: ChatbotState):
+    """Neo4j 검색 후, 흐름에 따라 분기"""
+    flow_type = state['flow_type']
+    if flow_type == 'sequential':
+        # 순차 흐름: VectorDB 쿼리 생성 노드로 이동
+        return "generate_vector_query"
+    elif flow_type == 'parallel':
+        # 병렬 흐름: 바로 VectorDB 검색 루프로 진입
+        return "gpt_query_rewriter"
+    else: # neo4j_only
+        # Neo4j 단독 흐름: 바로 최종 답변 생성
+        return "merge_and_respond"
+
+def route_after_evaluation(state: ChatbotState):
+    """LLM 평가 결과에 따라 재시도 또는 답변 생성으로 분기"""
+    evaluation = state.get("llm_evaluation", {})
+    loop_cnt = state.get("loop_cnt", 0)
+    should_retry = evaluation.get("overall", 0) < evaluation.get("recommended_threshold", 0.6) and loop_cnt < MAX_RETRY
+    
+    if should_retry:
+        print(f"--- Routing: Quality insufficient (Score: {evaluation.get('overall', 0):.3f}). Retrying... ---")
+        return "gpt_query_rewriter"
+    else:
+        print(f"--- Routing: Quality sufficient or max retries reached. Generating answer... ---")
+        return "merge_and_respond"
 
 
