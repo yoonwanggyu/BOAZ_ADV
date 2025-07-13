@@ -7,6 +7,9 @@ from prompt import *
 from vectordb_helper import *
 from prompt import *
 from state import *
+from dotenv import load_dotenv
+
+load_dotenv("/Users/yoon/BOAZ_ADV/Wang_Gyu/code/mcp/.env")
 
 # --- [기존] 라우터, 슬랙 결정, Neo4j DB 검색 노드 ---
 async def router_agent(state: ChatbotState) -> ChatbotState:
@@ -141,41 +144,98 @@ async def llm_evaluation_node(state: ChatbotState) -> ChatbotState:
         print(f"\n--- [Node] LLM Evaluation (Using Initial Score) ---")
         return ChatbotState(llm_evaluation=state.get('llm_evaluation'))
 
-# --- [수정] 최종 답변 생성 및 슬랙 전송 노드 ---
 async def merge_and_respond_node(state: ChatbotState) -> ChatbotState:
+    """
+    최종 답변을 생성하고, 동적으로 사용자 ID를 찾아 @멘션하여 슬랙으로 전송합니다.
+    """
     print("\n--- [Node] Merge and Respond ---")
-    
-    # LLM을 이용해 상세 답변 생성
-    prompt = LLM_SYSTEM_PROMPTY.format(
-        Neo4j=state.get("neo4j_documents", ""),
-        VectorDB=state.get("vector_documents", ""),
-        question=state.get("question")
-    )
-    response = await model.ainvoke(prompt)
-    final_answer = response.content
-    print(f"Final Answer Generated: {final_answer[:100]}...")
-
-    # 슬랙 전송 로직 (도구 직접 호출)
+    question = state.get("question", "")
+    final_answer = ""
     slack_response_text = ""
-    if state.get('decision_slack', 'no').lower() == 'yes':
-        print("--- Sending to Slack (Direct Call) ---")
-        try:
+
+    try:
+        # 1. 최종 답변 생성
+        prompt = LLM_SYSTEM_PROMPTY.format(
+            Neo4j=state.get("neo4j_documents", ""),
+            VectorDB=state.get("vector_documents", ""),
+            question=question
+        )
+        response = await model.ainvoke(prompt)
+        final_answer = response.content
+        print(f"Final Answer Generated: {final_answer[:100]}...")
+
+        # 2. 슬랙 전송 결정 여부에 따라 @멘션 로직 실행
+        if state.get('decision_slack', 'no').lower() == 'yes':
+            print("--- Sending to Slack with @mention (Dynamic User Lookup) ---")
+
+            # 2-1. .env 파일에서 공용 채널 ID 가져오기
             target_channel_id = os.getenv("SLACK_CHANNEL")
-            if not target_channel_id: raise ValueError("SLACK_CHANNEL 환경 변수 미설정")
+            if not target_channel_id:
+                raise ValueError("SLACK_CHANNEL 환경 변수가 .env 파일에 설정되지 않았습니다.")
+
+            # 2-2. 정교한 정규 표현식으로 수신인 이름 추출
+            recipient_name = None
+            match = re.search(r"(\S+)\s*(?:에게|님에게|한테)", question)
+            if match:
+                recipient_name = match.group(1).strip()
             
+            if not recipient_name:
+                raise ValueError("질문에서 수신인 이름을 찾을 수 없습니다. (예: 'OOO에게')")
+            print(f"Recipient Name Extracted: {recipient_name}")
+
+            # 2-3. [수정] 사용자 ID를 안전하게 조회하고 올바르게 파싱
+            users_tool = tools_dict.get("slack_get_users")
+            if not users_tool:
+                raise ValueError("slack_get_users 도구를 찾을 수 없습니다.")
+            
+            raw_users_response = await users_tool.ainvoke({})
+            users_response_str = str(raw_users_response[0]) if isinstance(raw_users_response, tuple) else str(raw_users_response)
+            
+            # JSON 문자열을 딕셔너리로 파싱
+            response_data = json.loads(users_response_str)
+            
+            # 응답이 성공적이고 'members' 키가 있는지 확인 후, 실제 사용자 리스트를 가져옴
+            if response_data.get("ok"):
+                users_list = response_data.get("members", [])
+            else:
+                raise ValueError(f"슬랙 사용자 목록을 가져오는 데 실패했습니다: {response_data.get('error', 'Unknown error')}")
+
+            user_id_to_mention = None
+            for user in users_list:
+                # user가 이제 딕셔너리이므로 .get() 메소드 정상 작동
+                if recipient_name in user.get('real_name', '') or recipient_name in user.get('name', ''):
+                    user_id_to_mention = user.get('id')
+                    break
+            
+            if not user_id_to_mention:
+                raise ValueError(f"'{recipient_name}'님을 슬랙 사용자로 찾을 수 없습니다.")
+            print(f"User ID Found: {user_id_to_mention}")
+
+            # 2-4. @멘션을 포함한 최종 메시지 텍스트 생성
+            text_to_send = f"<@{user_id_to_mention}> 님, 요청하신 정보입니다.\n\n{final_answer}"
+
+            # 2-5. slack_post_message 도구를 안전하게 호출
             slack_tool = tools_dict.get("slack_post_message")
-            if not slack_tool: raise ValueError("slack_post_message 도구 없음")
-
-            tool_input = {"channel_id": target_channel_id, "text": final_answer}
-            slack_response = await slack_tool.ainvoke(tool_input)
-            slack_response_text = slack_response[0] if isinstance(slack_response, tuple) else str(slack_response)
+            if not slack_tool:
+                raise ValueError("slack_post_message 도구를 찾을 수 없습니다.")
+            
+            tool_input = {"channel_id": target_channel_id, "text": text_to_send}
+            
+            raw_slack_response = await slack_tool.ainvoke(tool_input)
+            slack_response_text = str(raw_slack_response[0]) if isinstance(raw_slack_response, tuple) else str(raw_slack_response)
+            
             print(f"Slack Direct Call Response: {slack_response_text}")
-        except Exception as e:
-            slack_response_text = f"슬랙 전송 중 오류 발생: {e}"
-            print(f"!!! {slack_response_text}")
 
+    except Exception as e:
+        error_message = f"슬랙 전송 또는 답변 생성 중 오류 발생: {e}"
+        print(f"!!! {error_message}")
+        slack_response_text = error_message
+        if not final_answer:
+            final_answer = "답변을 생성하는 중 오류가 발생했습니다."
+
+    # 3. 최종 상태 반환
     return ChatbotState(
         final_answer=final_answer,
         slack_response=slack_response_text,
-        messages=[HumanMessage(content=state['question']), AIMessage(content=final_answer)]
+        messages=[HumanMessage(content=question), AIMessage(content=final_answer)]
     )
