@@ -6,7 +6,7 @@ import os
 from openai import OpenAI
 from typing import List, Dict
 
-load_dotenv()
+load_dotenv("/Users/yoon/BOAZ_ADV/Wang_Gyu/code/mcp/.env")
 
 # Neo4j 연결
 neo4j_graph = Neo4jGraph(

@@ -9,7 +9,7 @@ from langchain_pinecone import PineconeVectorStore
 import os
 from pinecone import Pinecone
 
-load_dotenv()
+load_dotenv("/Users/yoon/BOAZ_ADV/Wang_Gyu/code/mcp/.env")
 
 openai_api_key = os.environ["OPENAI_API_KEY"]
 pinecone_api_key = os.environ["PINECONE_API_KEY"]

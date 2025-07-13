@@ -3,6 +3,10 @@ import os
 import asyncio
 import os
 from typing import Dict, Any
+from dotenv import load_dotenv
+
+load_dotenv("/Users/yoon/BOAZ_ADV/Wang_Gyu/code/mcp/.env")
+
 
 async def setup_mcp_client():
     mcp_client = MultiServerMCPClient(
@@ -27,7 +31,7 @@ async def setup_mcp_client():
                 "env": {
                     "SLACK_BOT_TOKEN": os.getenv("SLACK_BOT_TOKEN"),
                     "SLACK_TEAM_ID": os.getenv("SLACK_TEAM_ID"),
-                    "SLACK_CHANNEL_IDS": "C093H2LTEF4"
+                    # "SLACK_CHANNEL_IDS": "C093H2LTEF4"
                 }
             }
         }
