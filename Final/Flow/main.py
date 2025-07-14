@@ -29,7 +29,7 @@ async def run_chatbot(query, thread_id):
 async def main():
     """메인 함수"""
     # 테스트 1: VectorDB Only (자동 쿼리 보정)
-    query1 = "Kasabach-Merritt Syndrome 소아 환자의 일반적인 치료법에 대해서 조사해서 백다은에게 slack으로 보내줘."
+    query1 = "윤왕규 환자의 나이와 성별, 처방받은 약물에 대해 조사해서 백다은에게 slack으로 보내줘."
     print("="*20 + " 테스트 1: VectorDB Only (With Self-Correction) " + "="*20)
     await run_chatbot(query1, "thread-1")
     

@@ -11,7 +11,7 @@ load_dotenv("/Users/yoon/BOAZ_ADV/Wang_Gyu/code/mcp/.env")
 async def setup_mcp_client():
     mcp_client = MultiServerMCPClient(
         {
-            "neo4j_retriever": {
+            "run_contextual_rag": {
                 "command": "/opt/anaconda3/envs/boaz/bin/python",
                 "args": ["neo4j_server.py"],
                 "transport": "stdio",
