@@ -48,8 +48,8 @@ async def neo4j_db(state: ChatbotState) -> ChatbotState:
     query = state['tools_query'][0]
     if not query: return ChatbotState(neo4j_documents=["Neo4j 쿼리가 제공되지 않았습니다."])
     try:
-        neo4j_tool = tools_dict.get("neo4j_retriever")
-        raw_result, _ = await neo4j_tool.ainvoke({"query": query})
+        neo4j_tool = tools_dict.get("run_contextual_rag")
+        raw_result, _ = await neo4j_tool.ainvoke({"query_text": query})
         result = raw_result
     except Exception as e:
         result = [f"Neo4j 도구 실행 중 오류: {e}"]
