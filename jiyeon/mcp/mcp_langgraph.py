@@ -20,7 +20,6 @@ import re
 
 load_dotenv()
 
-
 class ChatbotConfig:
     """챗봇 설정을 관리하는 클래스"""
     def __init__(self, config_file: str = "chatbot_config.json"):
@@ -47,13 +46,15 @@ class ChatbotConfig:
                 }
             },
             "slack": {
-                "enabled": True,
-                "token": os.getenv("SLACK_BOT_TOKEN", ""),
-                "channel": os.getenv("SLACK_CHANNEL", ""),
+                "enabled": False,  # Slack Token 문제로 임시 비활성화
+                "token": os.getenv("SLACK_BOT_TOKEN"),
+                "channel": os.getenv("SLACK_CHANNEL"),
                 "user_mapping": {
                     "백지연": "U093ELJBE3X",  # 실제 Slack 사용자 ID로 변경 필요
-                    #"김철수": "U0987654321",
-                    #"이영희": "U1122334455"
+                    "박혜원": "U0934T7LX6K",
+                    "백다은": "U093C5V5QUT",
+                    "이재원": "U093L63M5S8",
+                    "윤왕규": "U093L61FDHS"
                 }
             },
             "use_dummy_tools": False,  # 실제 MCP 서버 사용
@@ -115,7 +116,7 @@ class SlackNotifier:
                 return f"오류: '{recipient}' 사용자를 찾을 수 없습니다. (매핑된 사용자: {list(self.user_mapping.keys())})"
             
             print(f"Slack API 호출 중...")
-            print(f"Token: {self.token[:10]}..." if self.token else "Token 없음")
+            print(f"Token: {self.token}..." if self.token else "Token 없음")
             print(f"User ID: {user_id}")
             print(f"Message: {message[:50]}...")
             
@@ -329,7 +330,7 @@ model = ChatOpenAI(
 def extract_slack_info(question: str) -> tuple:
     """질문에서 Slack 전송 정보 추출"""
     # 간단한 패턴: "~에게"와 "전달해줘"가 포함되어 있으면 Slack 전송
-    recipient_pattern = r'(.+?)에게'
+    recipient_pattern = r'(.{3})에게'  # 딱 3글자만 매칭
     delivery_pattern = r'전달해줘'
     
     # 수신자와 전달 키워드가 모두 있는지 확인
@@ -576,8 +577,8 @@ class MedicalChatbot:
         
         # merge_outputs 후 → slack_send (조건부)
         def route_after_merge(state: ChatbotState):
-            if "slack_sender" in state.get("tools", []):
-                return "slack_send"
+            # if "slack_sender" in state.get("tools", []):
+            #     return "slack_send"
             return END
         
         self.builder.add_conditional_edges(
@@ -649,6 +650,34 @@ class MedicalChatbot:
             
             return final_answer
 
+def detect_slack_send(question: str):
+    import re
+    recipient_pattern = r'(.{3})에게'  # 딱 3글자만 매칭
+    delivery_pattern = r'전달해줘'
+    recipient_match = re.search(recipient_pattern, question)
+    delivery_match = re.search(delivery_pattern, question)
+    if recipient_match and delivery_match:
+        recipient = recipient_match.group(1).strip()
+        # "사용자:" 부분 제거 (더 정확하게)
+        recipient = re.sub(r'^사용자:\s*', '', recipient)
+        recipient = re.sub(r'사용자:\s*', '', recipient)  # 중간에 있는 경우도 제거
+        recipient = recipient.strip()  # 다시 공백 제거
+        message = question.replace(f"{recipient}에게", "").replace("전달해줘", "").strip()
+        return True, recipient, message
+    else:
+        return False, None, question
+
+async def send_slack_message(recipient: str, message: str, slack_notifier=None):
+    """
+    실제로 Slack 메시지를 전송하는 함수.
+    slack_notifier는 SlackNotifier 인스턴스여야 함.
+    """
+    if slack_notifier is None:
+        # 같은 파일에 있는 slack_notifier 사용
+        slack_notifier = globals()["slack_notifier"]
+    result = await slack_notifier.send_message(recipient, message)
+    return result
+
 async def interactive_chat():
     """대화형 채팅 인터페이스"""
     # MCP 초기화
@@ -684,14 +713,20 @@ async def interactive_chat():
             print(f"오류가 발생했습니다: {e}")
 
 async def single_question(question: str):
-    """단일 질문 처리"""
-    # MCP 초기화
+    """
+    단일 질문 처리 + slack 전송 필요 여부/정보 반환
+    """
+    slack_needed, recipient, message = detect_slack_send(question)
     await initialize_mcp()
-    
     chatbot = MedicalChatbot()
     answer = await chatbot.ask(question, verbose=True)
     print(f"\n최종 답변: {answer}")
-    return answer
+    return {
+        "answer": answer,
+        "slack_needed": slack_needed,
+        "recipient": recipient,
+        "message": message
+    }
 
 # 실행 함수들
 async def main():
