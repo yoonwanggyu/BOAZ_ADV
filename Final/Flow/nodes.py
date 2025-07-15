@@ -10,7 +10,7 @@ from state import *
 from dotenv import load_dotenv
 # from utils import tools_dict
 
-load_dotenv("/Users/daeunbaek/nuebaek/BOAZ/BOAZ_ADV/Daeun/.env")
+load_dotenv("/Users/yoon/BOAZ_ADV/Wang_Gyu/code/mcp/.env")
 
 
 # --- [기존] 라우터, 슬랙 결정, Neo4j DB 검색 노드 ---
@@ -20,6 +20,8 @@ async def router_agent(state: ChatbotState) -> ChatbotState:
     model_with_tools = model.with_structured_output(tool_router_schema) # tool_router_schema는 아래 셀에서 정의
     response = await model_with_tools.ainvoke([HumanMessage(content=ROUTER_PROMPT), HumanMessage(content=question)])
     print(f"Flow Type: {response.get('flow_type')}")
+    print(f"neo4j 특화 쿼리 : {response.get('neo4j_query', '')}")
+    print(f"vector db 특화 쿼리 : {response.get('vector_db_query', '')}")
     return ChatbotState(
         flow_type=response.get("flow_type"),
         tools_query=[response.get("neo4j_query", ""), response.get("vector_db_query", "")]
@@ -45,23 +47,10 @@ async def decision_slack(state: ChatbotState):
     print(f"Slack Decision: {response}")
     return ChatbotState(decision_slack=response)
 
-# async def neo4j_db(state: ChatbotState) -> ChatbotState:
-#     print("\n--- [Node] Neo4j DB Retriever ---")
-#     query = state['tools_query'][0]
-#     if not query: return ChatbotState(neo4j_documents=["Neo4j 쿼리가 제공되지 않았습니다."])
-#     try:
-#         neo4j_tool = tools_dict.get("run_contextual_rag")
-#         raw_result, _ = await neo4j_tool.ainvoke({"query_text": query})
-#         result = raw_result
-#     except Exception as e:
-#         result = [f"Neo4j 도구 실행 중 오류: {e}"]
-#     print(f"Neo4j Result: {result}")
-#     if state['flow_type'] == 'sequential':
-#         return ChatbotState(neo4j_documents=result, patient_info=str(result))
-#     return ChatbotState(neo4j_documents=result)
 async def neo4j_db(state: ChatbotState) -> ChatbotState:
     print("\n--- [Node] Neo4j DB Retriever ---")
     query = state['tools_query'][0]
+    print(f"neo4j로 들어갈 쿼리 : {query}")
     if not query:
         return ChatbotState(neo4j_documents=["Neo4j 쿼리가 제공되지 않았습니다."])
     try:
@@ -73,8 +62,9 @@ async def neo4j_db(state: ChatbotState) -> ChatbotState:
         result = [f"Neo4j 도구 실행 중 오류: {e}"]
     print(f"Neo4j Result: {result}")
     if state['flow_type'] == 'sequential':
-        return ChatbotState(neo4j_documents=result, patient_info=str(result))
-    return ChatbotState(neo4j_documents=result)
+        return ChatbotState(patient_info=result)
+    return ChatbotState(patient_info=result)
+
 async def generate_vector_query_node(state: ChatbotState) -> ChatbotState:
     print("\n--- [Node] Generate VectorDB Query (Sequential) ---")
     prompt = VECTOR_QUERY_GEN_PROMPT.format(question=state['question'], patient_info=state['patient_info'])
@@ -89,7 +79,8 @@ async def gpt_query_rewriter_node(state: ChatbotState) -> ChatbotState:
     """쿼리 재작성 및 최고 쿼리 선택 노드 (헬퍼 함수 명시적 호출)"""
     print(f"\n--- [Node] Query Rewriter (Attempt {state.get('loop_cnt', 0) + 1}) ---")
     loop_cnt = state.get("loop_cnt", 0)
-    original_question = state["question"]
+    original_question = state['tools_query'][1]
+    print(f"Vector DB 들어가기 전에 GPT가 재생성할 쿼리 : {original_question}")
     
     # 첫 시도일 경우에만 쿼리 변형 생성 및 최고 쿼리 평가/선택
     if loop_cnt == 0:
@@ -173,7 +164,7 @@ async def merge_and_respond_node(state: ChatbotState) -> ChatbotState:
     try:
         # 1. 최종 답변 생성
         prompt = LLM_SYSTEM_PROMPTY.format(
-            Neo4j=state.get("neo4j_documents", ""),
+            Neo4j=state.get("patient_info", ""),
             VectorDB=state.get("vector_documents", ""),
             question=question
         )

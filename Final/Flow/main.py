@@ -10,7 +10,7 @@ for k, v in tools_dict.items():
     print(f"  - {k}: {v}")
 
 # .env 파일 로드
-load_dotenv("/Users/daeunbaek/nuebaek/BOAZ/BOAZ_ADV/Daeun/.env")
+load_dotenv("/Users/yoon/BOAZ_ADV/Wang_Gyu/code/mcp/.env")
 
 graph = create_chatbot_graph()
 

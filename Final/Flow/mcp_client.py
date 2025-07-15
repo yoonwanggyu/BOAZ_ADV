@@ -5,7 +5,7 @@ import os
 from typing import Dict, Any
 from dotenv import load_dotenv
 
-load_dotenv("/Users/daeunbaek/nuebaek/BOAZ/BOAZ_ADV/Daeun/.env")
+load_dotenv("/Users/yoon/BOAZ_ADV/Wang_Gyu/code/mcp/.env")
 
 
 async def setup_mcp_client():

@@ -8,7 +8,6 @@ class ChatbotState(TypedDict):
     patient_info: Annotated[str, "순차 처리를 위한 환자 정보 (mcp_langgraph_hw)"]
     decision_slack: Annotated[str, "슬랙 전송 여부 결정 (mcp_langgraph_hw)"]
     tools_query: Annotated[List[str], "각 DB에 전달할 쿼리 리스트 (mcp_langgraph_hw)"]
-    neo4j_documents: Annotated[List, "Neo4j 검색 결과 (mcp_langgraph_hw)"]
     final_answer: Annotated[str, "최종 답변 (mcp_langgraph_hw)"]
     slack_response: Annotated[str, "슬랙 전송 결과 (mcp_langgraph_hw)"]
     messages: List[BaseMessage]
