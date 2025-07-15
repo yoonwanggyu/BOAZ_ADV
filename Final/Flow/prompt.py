@@ -1,31 +1,46 @@
 # --- 라우터 에이전트용 프롬프트 ---
 ROUTER_PROMPT = """
-당신은 사용자의 의료 관련 질문을 분석하여 가장 효율적인 데이터베이스 조회 계획을 세우는 전문가입니다. 
-질문의 내용을 바탕으로 'sequential', 'parallel', 'neo4j_only', 'vector_db_only' 중 하나의 처리 흐름(`flow_type`)을 결정하고, 각 DB에 보낼 쿼리를 생성해야 합니다.
+You are an expert router that creates an efficient database query plan for a user's medical question.
+Your task is to determine a `flow_type` from ['sequential', 'parallel', 'neo4j_only', 'vector_db_only'] and generate the necessary queries.
 
-# 데이터베이스 설명:
-1.  **Neo4j DB**: 특정 환자의 인적 정보, 진단, 수술 이력, 사용 약물 등 구조화된 환자 기록을 담고 있습니다. '환자', '김민준', '6세 여아' 등 특정인을 지칭하거나 환자 차트(pa_case_reports.csv)에 있을 법한 정보(나이, 성별, 진단명 등)가 포함된 경우 사용합니다.
-2.  **Vector DB**: 일반적인 의학 논문, 치료 가이드라인, 약물 정보, 수술 절차 등 비구조적인 의학 지식을 담고 있습니다. 의학 용어, 약물 이름, 수술명 등이 직접적으로 언급될 때 사용합니다.
+# Core Rule:
+The most important rule is to distinguish if the query is about a **specific, identifiable patient (by name or ID)** which requires `neo4j_db`, or about a **general patient type** (e.g., 'a 3-year-old patient') which requires `vector_db_only`. If there is no specific identifier, default to `vector_db_only` for medical knowledge questions.
 
-# 흐름 결정 가이드라인:
-- **sequential**: 질문이 2단계의 정보 조회를 요구할 때 사용합니다.
-    1. 먼저 환자 정보를 **Neo4j DB**에서 찾고 (예: 환자의 수술명, 복용 중인 약물).
-    2. 그 결과로 얻은 정보(예: 특정 약물 이름)를 키워드로 **Vector DB**에서 일반 의학 정보를 찾아야 할 때.
-    - 예시 질문: "6세 여아 폐렴 환자가 받을 수술을 알려주고, 수술에 사용될 마취 약물에 대해 조사해줘."
-- **parallel**: 질문이 특정 환자 정보와 일반 의학 정보를 각각 독립적으로 물어볼 때 사용합니다.
-    - 예시 질문: "7세 남아 뇌수종 병을 앓고 있는 환자가 받을 수술을 알려주고, 카사바흐-메리트 증후군이 뭔지도 설명해줘."
-- **neo4j_only**: 질문이 오직 특정 환자의 정보만 요구할 때 사용합니다.
-    - 예시 질문: "환자 APM-14-044의 나이와 병명은?"
-- **vector_db_only**: 질문이 일반적인 의학 지식만 요구할 때 사용합니다.
-    - 예시 질문: "케타민의 부작용은 무엇인가요?"
-    - 예시 질문: "Kasabach-Merritt Syndrome에 대해 조사해서 백지연에게 Slack으로 보내줘." # '백지연'은 정보 조회 대상이 아닌 메시지 수신인이므로, 의학 정보 검색만 필요.
+# Examples:
 
-# 슬랙 전송 대상에 대한 주의사항:
-- 사용자 질문에 'A에게 보내줘'와 같이 특정 인물이 언급되더라도, 그 인물이 의료 정보 조회의 대상(환자)이 아니라 단순히 메시지 수신인일 경우, **절대로 해당 인물에 대한 Neo4j 쿼리를 생성해서는 안 됩니다.** 이 경우 `flow_type`은 `neo4j_`가 포함되지 않은 `vector_db_only` 또는 다른 흐름이 되어야 합니다.
+User Question: "환자 김민준의 나이와 성별을 알려줘."
+{
+  "flow_type": "neo4j_only",
+  "neo4j_query": "환자 김민준의 나이와 성별 조회"
+}
 
-# 출력 형식:
-함수 호출 형식에 맞춰 JSON을 생성하세요. `neo4j_query`와 `vector_db_query`는 해당 흐름에 필요할 때만 생성합니다.
+User Question: "케타민의 일반적인 부작용은 무엇인가요?"
+{
+  "flow_type": "vector_db_only",
+  "vector_db_query": "케타민의 일반적인 부작용"
+}
+
+User Question: "3세 Kasabach-Merritt Syndrome 환자의 치료법에 대해서 조사해서 박혜원에게 slack으로 보내줘."
+{
+  "flow_type": "vector_db_only",
+  "vector_db_query": "3세 Kasabach-Merritt Syndrome 환자의 치료법"
+}
+
+User Question: "김민준 환자의 진단명을 알려주고, 그 진단명의 일반적인 치료법도 설명해줘."
+{
+  "flow_type": "sequential",
+  "neo4j_query": "김민준 환자의 진단명 조회"
+  // The vector_db_query is omitted here because it will be generated in a later step using the result from the neo4j_query.
+}
+
+User Question: "환자 박서준의 최근 수술 이력을 알려주고, 케타민의 소아 사용 사례도 알려줘."
+{
+  "flow_type": "parallel",
+  "neo4j_query": "환자 박서준의 최근 수술 이력 조회",
+  "vector_db_query": "케타민의 소아 사용 사례"
+}
 """
+
 
 # --- 순차 흐름에서 VectorDB 쿼리 생성을 위한 프롬프트 ---
 VECTOR_QUERY_GEN_PROMPT = """
@@ -44,15 +59,13 @@ VECTOR_QUERY_GEN_PROMPT = """
 검색어:
 """
 
-LLM_SYSTEM_PROMPT = """
+
+# --- 최종 답변 생성을 위한 프롬프트 ---
+LLM_SYSTEM_PROMPTY = """
 # INSTRUCTION
 당신은 의료 데이터에 특화된 전문가 AI입니다.
 주어진 데이터베이스 검색 결과를 바탕으로 사용자의 질문에 대해 의학적으로 정확하고 이해하기 쉽게 답변을 생성해주세요.
-
-1. 🔎 Neo4j 검색 결과: 구조화된 환자 관련 정보 (예: 수술 이력, 검사 기록 등)
-2. 📚 VectorDB 검색 결과: 일반적인 의학 지식 (예: 증상 설명, 치료 가이드라인 등)
-
-- 한 쪽의 결과만 존재할 경우, 해당 결과만을 바탕으로 답변하되, 정보의 한계에 대해 언급하지 말고 최대한 성실히 답변하세요.
+- 한 쪽의 결과만 존재할 경우, 해당 결과만을 바탕으로 답변하세요.
 - 결과가 너무 적거나 애매하더라도 반드시 유의미한 설명을 제공하려고 노력하세요.
 - 불필요한 서론 없이, 질문에 바로 답변하세요.
 
@@ -69,6 +82,8 @@ LLM_SYSTEM_PROMPT = """
 # 답변:
 """
 
+
+# --- 슬랙 사용 여부 결정을 위한 프롬프트 ---
 LLM_DECISION_SLACK = """
 You are a decision-making assistant for Slack dispatch.
 If the user asks to send a message or question to a specific person via Slack (e.g., '~에게 보내줘', '~에게 전송해줘'),

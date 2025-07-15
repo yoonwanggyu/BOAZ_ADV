@@ -1,8 +1,10 @@
 import streamlit as st
 import asyncio
-from mcp_langgraph import single_question, send_slack_message # send_slack_message 추가
+from main import * # send_slack_message 추가
 from io import StringIO
 import requests # 이 import는 현재 코드에서 사용되지 않으므로 제거해도 됩니다.
+
+thread_id = "thread-1"
 
 # --- 페이지 설정 ---
 st.set_page_config(
@@ -328,7 +330,7 @@ else: # "chatbot" 페이지
     # 1. 요약 함수 정의 (예시: single_question 재활용)
     def summarize_history(history_text):
         summary_prompt = f"다음 대화를 한두 문장으로 요약해줘:\n{history_text}"
-        return asyncio.run(single_question(summary_prompt))
+        return asyncio.run(run_chatbot (summary_prompt,thread_id))
 
     # 중복 메시지 및 무한루프 방지용 입력 상태 관리
     if "pending_prompt" not in st.session_state:
@@ -413,8 +415,8 @@ else: # "chatbot" 페이지
         else:
             enhanced_prompt = user_prompt
         
-        result = asyncio.run(single_question(enhanced_prompt))
-        result_recipient = asyncio.run(single_question(user_prompt))
+        result = asyncio.run(run_chatbot(enhanced_prompt,thread_id))
+        result_recipient = asyncio.run(run_chatbot(user_prompt,thread_id))
         answer = result["answer"]
         slack_needed = result["slack_needed"]
         recipient = result_recipient["recipient"]
@@ -451,17 +453,17 @@ else: # "chatbot" 페이지
             #         unsafe_allow_html=True
             #     )
             recipient = st.session_state.get("last_slack_recipient")
-            with col2:
-                if st.button(f"{recipient}님에게 전송", key="slack_send_inline"):
-                    import asyncio
-                    user_name = st.session_state.get("user_name", "사용자")
-                    slack_message_with_prefix = f"{user_name}님이 전달하는 메시지입니다:\n\n{st.session_state['last_slack_message']}"
-                    send_result = asyncio.run(send_slack_message(
-                        st.session_state["last_slack_recipient"],
-                        slack_message_with_prefix
-                    ))
-                    st.session_state.sessions[st.session_state.current_session_index].append({"role": "assistant", "content": send_result})
-                    st.session_state["last_slack_needed"] = False
-                    st.session_state["last_slack_recipient"] = None
-                    st.session_state["last_slack_message"] = None
-                    st.rerun()
+            # with col2:
+            #     if st.button(f"{recipient}님에게 전송", key="slack_send_inline"):
+            #         import asyncio
+            #         user_name = st.session_state.get("user_name", "사용자")
+            #         slack_message_with_prefix = f"{user_name}님이 전달하는 메시지입니다:\n\n{st.session_state['last_slack_message']}"
+            #         send_result = asyncio.run(send_slack_message(
+            #             st.session_state["last_slack_recipient"],
+            #             slack_message_with_prefix
+            #         ))
+            #         st.session_state.sessions[st.session_state.current_session_index].append({"role": "assistant", "content": send_result})
+            #         st.session_state["last_slack_needed"] = False
+            #         st.session_state["last_slack_recipient"] = None
+            #         st.session_state["last_slack_message"] = None
+            #         st.rerun()
