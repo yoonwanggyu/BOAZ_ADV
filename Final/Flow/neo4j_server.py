@@ -65,7 +65,7 @@ from mcp.server.fastmcp import FastMCP
 from embedder import *
 from dotenv import load_dotenv
 
-load_dotenv("/Users/daeunbaek/nuebaek/BOAZ/BOAZ_ADV/Daeun/.env")
+load_dotenv("/Users/yoon/BOAZ_ADV/Wang_Gyu/code/mcp/.env")
 
 embedder = SMCEmbeddings(model="text-embedding-3-large", 
                          dimensions=256, 
