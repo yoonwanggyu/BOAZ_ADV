@@ -4,7 +4,8 @@ import re
 import pandas as pd
 from langchain_openai import ChatOpenAI
 
-def build_term_dict_from_xls(xls_path = '/Users/yoon/BOAZ_ADV/Final/Flow/Pediatric_Terminology.xls'):
+def build_term_dict_from_xls(xls_path = '/Users/daeunbaek/nuebaek/BOAZ/BOAZ_ADV/Final/Flow/Pediatric_Terminology.xls'):
+
     term_dict: Dict[str, List[str]] = {}
     try:
         sheets = pd.read_excel(xls_path, sheet_name=None, engine="xlrd")

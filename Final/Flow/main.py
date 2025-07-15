@@ -3,8 +3,14 @@ import asyncio
 from dotenv import load_dotenv
 from langchain_core.messages import HumanMessage
 
+from mcp_client import setup_mcp_client_sync
+tools_dict = setup_mcp_client_sync()
+print("현재 tools_dict에 등록된 MCP 툴 목록:")
+for k, v in tools_dict.items():
+    print(f"  - {k}: {v}")
+
 # .env 파일 로드
-load_dotenv("/Users/yoon/BOAZ_ADV/Wang_Gyu/code/mcp/.env")
+load_dotenv("/Users/daeunbaek/nuebaek/BOAZ/BOAZ_ADV/Daeun/.env")
 
 graph = create_chatbot_graph()
 
@@ -29,16 +35,16 @@ async def run_chatbot(query, thread_id):
 async def main():
     """메인 함수"""
     # 테스트 1: VectorDB Only (자동 쿼리 보정)
-    query1 = "윤왕규 환자의 나이와 성별, 처방받은 약물에 대해 조사해서 백다은에게 slack으로 보내줘."
-    print("="*20 + " 테스트 1: VectorDB Only (With Self-Correction) " + "="*20)
-    await run_chatbot(query1, "thread-1")
+    # query1 = "윤왕규 환자의 나이와 성별, 처방받은 약물에 대해 조사해서 백다은에게 slack으로 보내줘."
+    # print("="*20 + " 테스트 1: VectorDB Only (With Self-Correction) " + "="*20)
+    # await run_chatbot(query1, "thread-1")
     
-    print("\n\n" + "="*80 + "\n\n")
+    # print("\n\n" + "="*80 + "\n\n")
 
     # 테스트 2: Sequential (Neo4j -> VectorDB)
-    # query2 = "6세 여아 폐렴 환자가 받을 수술을 알려주고, 수술에 사용될 마취 약물에 대해 조사해서 백지연에게 slack으로 보내줘."
-    # print("="*20 + " 테스트 2: Sequential " + "="*20)
-    # await run_chatbot(query2, "thread-2")
+    query2 = "박혜원 환자가 받은 수술 및 병명에 대해 알려주고, 의학적으로 조사해서 자세한 내용을 윤왕규에게 slack으로 보내줘."
+    print("="*20 + " 테스트 2: Sequential " + "="*20)
+    await run_chatbot(query2, "thread-2")
 
 if __name__ == "__main__":
     """Python 파일로 직접 실행될 때만 main() 함수 실행"""

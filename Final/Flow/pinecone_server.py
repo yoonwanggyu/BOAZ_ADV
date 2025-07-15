@@ -9,7 +9,7 @@ from langchain_pinecone import PineconeVectorStore
 import os
 from pinecone import Pinecone
 
-load_dotenv("/Users/yoon/BOAZ_ADV/Wang_Gyu/code/mcp/.env")
+load_dotenv("/Users/daeunbaek/nuebaek/BOAZ/BOAZ_ADV/Daeun/.env")
 
 openai_api_key = os.environ["OPENAI_API_KEY"]
 pinecone_api_key = os.environ["PINECONE_API_KEY"]
@@ -34,12 +34,12 @@ def create_retriever():
     )
 
     # CrossEncoder reranker 설정
-    reranker_model = HuggingFaceCrossEncoder(model_name="BAAI/bge-reranker-v2-m3")
+    # reranker_model = HuggingFaceCrossEncoder(model_name="BAAI/bge-reranker-v2-m3")
+    reranker_model = HuggingFaceCrossEncoder(model_name="ncbi/MedCPT-Cross-Encoder")
     compressor_retriever = CrossEncoderReranker(
         model=reranker_model,
         top_n=5
     )
-
     # 기본 검색기 → 압축된 Retriever로 감싸기
     base_retriever = vectorstore.as_retriever(search_kwargs={"k": 10})
     retriever = ContextualCompressionRetriever(

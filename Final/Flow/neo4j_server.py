@@ -65,7 +65,7 @@ from mcp.server.fastmcp import FastMCP
 from embedder import *
 from dotenv import load_dotenv
 
-load_dotenv("/Users/yoon/BOAZ_ADV/Wang_Gyu/code/mcp/.env")
+load_dotenv("/Users/daeunbaek/nuebaek/BOAZ/BOAZ_ADV/Daeun/.env")
 
 embedder = SMCEmbeddings(model="text-embedding-3-large", 
                          dimensions=256, 
@@ -216,17 +216,19 @@ def build_context_from_vector(driver, query_text: str, top_k: int = 5) -> str:
 def run_contextual_rag(query_text: str):
     """Neo4j 데이터베이스에서 컨텍스트를 검색하고 LLM으로 답변을 생성합니다."""
     try:
-        print(f"\n[질문] {query_text}\n")
+        # print(f"\n[질문] {query_text}\n")
 
-        context = build_context_from_vector(driver, query_text, top_k=5)
+        context = build_context_from_vector(driver, query_text, top_k=2)
 
-        print("[🔎 생성된 Context]\n")
-        print(context)
+        # print("[🔎 생성된 Context]\n")
+        # print(context)
 
-        # 올바른 방식으로 LLM 호출
-        response = llm.generate(context=context, question=query_text)
+        prompt = f"context: {context}\n\n질문: {query_text}"
+        response = llm.invoke(prompt)
+        # # 올바른 방식으로 LLM 호출
+        # response = llm.invoke(context=context, question=query_text)
         
-        print("\n[🧠 LLM 응답]\n")
+        # print("\n[🧠 LLM 응답]\n")
         print(response)
         
         return response
@@ -243,3 +245,5 @@ def run_contextual_rag(query_text: str):
 
 if __name__ == "__main__":
     mcp.run(transport="stdio")
+# if __name__ == "__main__":
+#     mcp.run(transport="socket")

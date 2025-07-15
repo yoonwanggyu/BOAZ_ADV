@@ -8,8 +8,10 @@ from vectordb_helper import *
 from prompt import *
 from state import *
 from dotenv import load_dotenv
+# from utils import tools_dict
 
-load_dotenv("/Users/yoon/BOAZ_ADV/Wang_Gyu/code/mcp/.env")
+load_dotenv("/Users/daeunbaek/nuebaek/BOAZ/BOAZ_ADV/Daeun/.env")
+
 
 # --- [기존] 라우터, 슬랙 결정, Neo4j DB 검색 노드 ---
 async def router_agent(state: ChatbotState) -> ChatbotState:
@@ -43,21 +45,36 @@ async def decision_slack(state: ChatbotState):
     print(f"Slack Decision: {response}")
     return ChatbotState(decision_slack=response)
 
+# async def neo4j_db(state: ChatbotState) -> ChatbotState:
+#     print("\n--- [Node] Neo4j DB Retriever ---")
+#     query = state['tools_query'][0]
+#     if not query: return ChatbotState(neo4j_documents=["Neo4j 쿼리가 제공되지 않았습니다."])
+#     try:
+#         neo4j_tool = tools_dict.get("run_contextual_rag")
+#         raw_result, _ = await neo4j_tool.ainvoke({"query_text": query})
+#         result = raw_result
+#     except Exception as e:
+#         result = [f"Neo4j 도구 실행 중 오류: {e}"]
+#     print(f"Neo4j Result: {result}")
+#     if state['flow_type'] == 'sequential':
+#         return ChatbotState(neo4j_documents=result, patient_info=str(result))
+#     return ChatbotState(neo4j_documents=result)
 async def neo4j_db(state: ChatbotState) -> ChatbotState:
     print("\n--- [Node] Neo4j DB Retriever ---")
     query = state['tools_query'][0]
-    if not query: return ChatbotState(neo4j_documents=["Neo4j 쿼리가 제공되지 않았습니다."])
+    if not query:
+        return ChatbotState(neo4j_documents=["Neo4j 쿼리가 제공되지 않았습니다."])
     try:
         neo4j_tool = tools_dict.get("run_contextual_rag")
-        raw_result, _ = await neo4j_tool.ainvoke({"query_text": query})
-        result = raw_result
+        raw_result = await neo4j_tool.ainvoke({"query_text": query})
+        print("Neo4j MCP 반환값:", raw_result)
+        result = raw_result[0] if isinstance(raw_result, (list, tuple)) else raw_result
     except Exception as e:
         result = [f"Neo4j 도구 실행 중 오류: {e}"]
     print(f"Neo4j Result: {result}")
     if state['flow_type'] == 'sequential':
         return ChatbotState(neo4j_documents=result, patient_info=str(result))
     return ChatbotState(neo4j_documents=result)
-
 async def generate_vector_query_node(state: ChatbotState) -> ChatbotState:
     print("\n--- [Node] Generate VectorDB Query (Sequential) ---")
     prompt = VECTOR_QUERY_GEN_PROMPT.format(question=state['question'], patient_info=state['patient_info'])

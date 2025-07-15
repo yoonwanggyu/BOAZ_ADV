@@ -5,7 +5,7 @@ import os
 from typing import Dict, Any
 from dotenv import load_dotenv
 
-load_dotenv("/Users/yoon/BOAZ_ADV/Wang_Gyu/code/mcp/.env")
+load_dotenv("/Users/daeunbaek/nuebaek/BOAZ/BOAZ_ADV/Daeun/.env")
 
 
 async def setup_mcp_client():
@@ -39,6 +39,7 @@ async def setup_mcp_client():
     
     mcp_tools = await mcp_client.get_tools()
     tools_dict = {tool.name: tool for tool in mcp_tools}
+    print("tools_dict:", tools_dict)
     return tools_dict
 
 def setup_mcp_client_sync() -> Dict[str, Any]:

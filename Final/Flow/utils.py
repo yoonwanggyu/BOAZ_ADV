@@ -1,5 +1,12 @@
 from state import *
 
+# from mcp_client import MCPTool
+
+# tools_dict = {
+#     "VectorDB_retriever": MCPTool("localhost", 8005, "VectorDB_Retriever"),
+#     "run_contextual_rag": MCPTool("localhost", 8006, "Neo4j_Retriever"),
+# }
+
 # --------
 tool_router_schema = {
     "name": "route_question",
@@ -47,7 +54,7 @@ def route_after_neo4j(state: ChatbotState) -> str:
         return "start_vector_db_flow"   # parallel -> VectorDB 흐름 시작
     else: # neo4j_only
         return "go_to_merge"            # neo4j_only -> 바로 최종 답변으로
-
+MAX_RETRY = 3  # 원하는 재시도 횟수로 수정 가능
 # --- [수정] LLM 평가 이후의 조건부 분기 함수 ---
 def route_after_evaluation(state: ChatbotState) -> str:
     """LLM 평가 결과에 따라 다음 행동을 결정하는 키워드를 반환"""
