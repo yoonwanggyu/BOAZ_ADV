@@ -1,137 +1,91 @@
 ![header](https://capsule-render.vercel.app/api?type=Waving&color=auto&height=300&fontAlignY=50&fontAlign=50&section=header&text=땡큐소아마취&fontSize=50)
 <div align=center>
 
-이 프로젝트는 **사용자가 챗봇 인터페이스를 통해 카드 혜택 정보를 자세히 제공받을 수 있도록 설계되었습니다.**   
-프로젝트는 웹에서 수집한 카드 데이터를 벡터 데이터베이스(Pinecone)에 저장하고, 이를 활용하여 사용자 질문에 답변합니다.    
+LangGraph 기반 파이프라인과 MCP(Model Context Protocol) 인프라 위에 구축된 **소아마취 도메인 특화 AI 챗봇**입니다.  
+Pinecone DB(의료 지식)와 Neo4j DB(환자·수술 기록)를 양방향으로 조회하고, Slack 워크스페이스와 실시간으로 연동되어 병원 내 의료진이 **정보를 즉시 공유**할 수 있습니다.
 </div>
 
-## 수행 기간
-2024.08.08 ~ 2024.08.29
+## 🗓️ Timeline
+2025.02 ~ 2025.08
 
-## 👪 팀원
+## 👪 Team
 | 이름          | GitHub 프로필                                             |
 | ------------- | --------------------------------------------------------- |
-| 김경민        | [@rudals6151](https://github.com/rudals6151)              |
-| 김동환        | [@forwarder1121](https://github.com/forwarder1121)        |
-| 오영민        | [@oymin2001](https://github.com/oymin2001)                |
+| 백다은        | [nuebaek](https://github.com/nuebaek)              |
+| 이재원        | [Jaewon1634](https://github.com/Jaewon1634)      |
+| 윤왕규       | [yoonwanggyu](https://github.com/yoonwanggyu)                |
+| 박혜원       | [nowhye](https://github.com/nowhye)               |
+| 백지연       | [wlsisl](https://github.com/wlsisl)              |
 
-
-## 프로젝트 구조
-
-```plaintext
-MINI_PROJECT/
-├── CardInfo/                   # 개별 카드 정보 파일을 저장하는 디렉터리
-├── .env                        # 환경 변수 파일
-├── .gitignore                  # Git 무시 파일
-├── card_crawler.py             # 웹사이트에서 카드 정보를 크롤링하는 스크립트
-├── chatbot_logic.py            # 챗봇 질의응답 로직을 처리하는 스크립트
-├── streamlit_app.py            # Streamlit 인터페이스를 관리하는 스크립트
-├── combined_card_info.json     # 모든 카드 정보를 포함한 통합 JSON 파일
-├── pinecone_store.py           # 카드 데이터를 Pinecone 벡터 데이터베이스에 저장하는 스크립트
-├── README.md                   # 이 문서 파일
-├── requirements.txt            # 프로젝트에 필요한 Python 패키지
-```
-
-## 요구 사항
-
-스크립트를 실행하기 전에, 다음 명령어로 필요한 Python 패키지를 설치하세요:
-
-```bash
-pip install -r requirements.txt
-```
-
-## 설정 방법
-
-### 1. 환경 변수 설정
-
-프로젝트의 루트 디렉터리에 `.env` 파일을 생성하고 다음 내용을 추가하세요:
+## 📚 Project Structure
 
 ```plaintext
-OPENAI_API_KEY=your_openai_api_key
-PINECONE_API_KEY=your_pinecone_api_key
-HUGGINGFACEHUB_API_TOKEN=your_huggingfacehub_api_token
+PEDI-ANESTHESIA-BOT/          # ◀︎ 레포 루트
+├── KnowledgeBase/            # 의료 지식·용어 등 정적 자원
+│   └── Pediatric_Terminology.xls
+│
+├── src/                      # 파이썬 소스 코드 (import 경로를 src 패키지로 통일)
+│   │
+│   ├── nodes.py                 # LangGraph 파이프라인 nodes
+│   ├── edges.py                 # LangGraph 파이프라인 edges
+│   ├── prompt.py                # 시스템·유저 프롬프트 템플릿
+│   ├── state.py                 # LangGraph 공유 상태 정의
+│   ├── agent.py                 # LLM Agent 호출 
+│   ├── utils.py
+│   │
+│   ├── server/                   # 로컬 MCP Server
+│   │   ├── pinecone_server.py     # 소아마취 의료 지식 서버
+│   │   ├── vectordb_helper.py     # 소아마취 의료 지식 서버
+│   │   ├── neo4j_server.py        # 환자 정보 서버
+│   │   └── embedder.py            # neo4j 검색용 임베더
+│   │
+│   ├── clients/              # MCP 서비스 클라이언트
+│   │   └── mcp_client.py          # 최종 사용 가능한 MCP 툴
+│   │
+│   └── evaluators/           # LLM-as-a-Judge
+│       └── query_rewrite_llm_evaluator.py   # Langgraph 흐름안에서 LLM as a Judge 수행
+│
+├── apps/                     # UI · 인터페이스 계층
+│   └── medical_chatbot_app.py     # Streamlit 실행
+├── .env                      # 비밀 키·엔드포인트 (gitignore 포함)
+├── .gitignore
+├── README.md
+└── requirements.txt
 ```
+## 🗺️ LangGraph Execution Flow
+<details>
+<summary>노드별 상세 설명 (클릭해서 펼치기)</summary>
 
-`your_openai_api_key`, `your_pinecone_api_key`, `your_huggingfacehub_api_token`은 실제 API 키로 교체해야 합니다.
+1. **router_agent**  
+   └─ 질문 의도를 분류해 <br>
+   &nbsp;&nbsp;&nbsp;&nbsp;• `vector_db_only` 경로 → ③으로 <br>
+   &nbsp;&nbsp;&nbsp;&nbsp;• `sequential` 경로 → ②로
 
-### 2. 카드 데이터 크롤링
+2. **neo4j_db**  
+   └─ 환자·수술·약물 그래프 쿼리 실행 → ⑦로 합류
 
-`card_crawler.py` 스크립트를 사용하여 대상 웹사이트에서 카드 정보를 크롤링합니다.   
-이 스크립트는 데이터를 추출하여 각 카드사마다 별도의 JSON 파일로 저장합니다.   
+3. **generate_vector_query**  
+4. **gpt_query_rewriter**  
+5. **vector_retrieval**  
+6. **llm_evaluation_node**  
+   └─ ③‒⑥ 단계에서 Pinecone 기반 근거 문서 검색·평가
 
-```bash
-python card_crawler.py
-```
+7. **merge_and_respond**  
+   └─ 그래프·벡터 결과를 통합해 초안 답변 생성
 
-스크립트를 실행하면 `CardInfo/` 디렉터리에 JSON 파일이 생성됩니다.   
+8. **decision_slack_node**  
+   └─ Slack 메시지 쓰레드 관리·버튼 인터랙션 처리
 
-### 3. JSON 파일 통합
+9. **__end__**  
+   └─ 최종 응답 반환
+</details>
 
-`card_crawler.py` 스크립트는 데이터를 크롤링한 후 개별 JSON 파일을 하나의 `combined_card_info.json` 파일로 자동 통합합니다.   
-
-### 4. Pinecone에 데이터 저장
-
-`pinecone_store.py` 스크립트를 사용하여 통합된 JSON 데이터를 Pinecone 벡터 데이터베이스에 업로드합니다.   
-각 카드의 혜택이 Hugging Face 임베딩으로 벡터화되어 Pinecone에 저장됩니다.   
-
-```bash
-python pinecone_store.py
-```
-
-이 스크립트는 데이터가 Pinecone에 한 번만 업로드되도록 보장합니다.   
-
-### 5. Streamlit 챗봇 앱 실행
-
-마지막으로, `streamlit_app.py`를 사용하여 챗봇 인터페이스를 실행합니다.    
-이 앱을 통해 사용자는 카드 혜택에 대해 질문할 수 있으며, Pinecone 데이터베이스에서 관련 정보를 실시간으로 검색하여 답변을 제공합니다.   
-
-```bash
-streamlit run streamlit_app.py
-```
-
-Streamlit 앱은 브라우저에서 `http://localhost:8502`에서 확인할 수 있습니다.   
-
-## 스크립트 개요
-
-### `card_crawler.py`
-
-이 스크립트는 Selenium을 사용하여 특정 웹사이트에서 카드 혜택 데이터를 크롤링합니다.    
-데이터는 JSON 형식으로 저장되며, 카드사마다 별도의 파일에 저장됩니다.     
-크롤링 후, 개별 JSON 파일을 하나의 `combined_card_info.json` 파일로 통합합니다.   
-
-### `pinecone_store.py`
-
-이 스크립트는 `combined_card_info.json`에서 카드 데이터를 로드한 후 Pinecone에 업로드합니다.   
-데이터는 Hugging Face 임베딩을 사용해 벡터화된 후 Pinecone에 저장됩니다.    
-이렇게 저장된 데이터는 챗봇과의 상호작용 시 효율적으로 검색됩니다.    
-
-### `chatbot_logic.py`
-
-이 스크립트는 챗봇의 질의응답 로직을 처리합니다.     
-사용자가 입력한 질문을 처리하여 Pinecone에서 관련 정보를 검색하고, GPT 모델을 통해 자연어 응답을 생성합니다.
-
-### `streamlit_app.py`
-
-이 Streamlit 앱은 사용자 인터페이스를 제공합니다.    
-사용자와 챗봇 간의 대화를 관리하고, `chatbot_logic.py`의 로직을 활용하여 실시간으로 질문에 답변합니다.
-
-## 사용 예시
-
-1. **데이터 크롤링 및 준비:**
-   `card_crawler.py`를 실행하여 데이터를 크롤링하고 `combined_card_info.json`을 생성합니다.
-
-2. **Pinecone에 데이터 저장:**
-   `pinecone_store.py`를 실행하여 크롤링된 데이터를 Pinecone에 업로드합니다.
-
-3. **챗봇 실행:**
-   `streamlit_app.py`를 실행하여 챗봇 서버를 시작합니다.
-
-## 기여 방법
+## 🤝 Project Structure
 
 이 프로젝트에 기여하고 싶다면, 리포지토리를 포크하고 풀 리퀘스트를 생성하세요.   
 버그 또는 기능 요청에 대한 이슈를 열어도 좋습니다.
 
-## 라이선스
+## 📜 License
 
 이 프로젝트는 MIT 라이선스에 따라 라이선스가 부여됩니다. 자세한 내용은 `LICENSE` 파일을 참조하세요.
 ```
