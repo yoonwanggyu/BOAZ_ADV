@@ -1,4 +1,4 @@
-![header](https://capsule-render.vercel.app/api?type=Waving&color=auto&height=300&fontAlignY=50&fontAlign=50&section=header&text=BOAZ%20Card-ChatBot%20Project&fontSize=50)
+![header](https://capsule-render.vercel.app/api?type=Waving&color=auto&height=300&fontAlignY=50&fontAlign=50&section=header&text=땡큐소아마취&fontSize=50)
 <div align=center>
 
 이 프로젝트는 **사용자가 챗봇 인터페이스를 통해 카드 혜택 정보를 자세히 제공받을 수 있도록 설계되었습니다.**   
