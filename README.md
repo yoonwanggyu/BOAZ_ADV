@@ -57,33 +57,37 @@ PEDI-ANESTHESIA-BOT/          # ◀︎ 레포 루트
 ```
 ## 🗺️ LangGraph Execution Flow
 <p align="center">
-  <img src="docs/assets/langgraph_flow.png" alt="LangGraph flowchart" width="600"/>
+  <img src="0008D232-381E-4FAB-99F0-900B1D7CBC42.jpeg" alt="LangGraph flowchart" width="600"/>
 </p>
 
-노드별 상세 설명
+
+<details>
+<summary>Node-by-node details (click to expand)</summary>
 
 1. **router_agent**  
-   └─ 질문 의도를 분류해 <br>
-   &nbsp;&nbsp;&nbsp;&nbsp;• `vector_db_only` 경로 → ③으로 <br>
-   &nbsp;&nbsp;&nbsp;&nbsp;• `sequential` 경로 → ②로
+   └─ Classifies intent →  
+   &nbsp;&nbsp;&nbsp;&nbsp;• `vector_db_only` → ③  
+   &nbsp;&nbsp;&nbsp;&nbsp;• `sequential` → ②  
 
 2. **neo4j_db**  
-   └─ 환자·수술·약물 그래프 쿼리 실행 → ⑦로 합류
+   └─ Queries patient / surgery / drug graph → joins at ⑦  
 
 3. **generate_vector_query**  
 4. **gpt_query_rewriter**  
 5. **vector_retrieval**  
 6. **llm_evaluation_node**  
-   └─ ③‒⑥ 단계에서 Pinecone 기반 근거 문서 검색·평가
+   └─ Steps ③–⑥: Pinecone doc search & evaluation  
 
 7. **merge_and_respond**  
-   └─ 그래프·벡터 결과를 통합해 초안 답변 생성
+   └─ Merges graph + vector answers  
 
 8. **decision_slack_node**  
-   └─ Slack 메시지 쓰레드 관리·버튼 인터랙션 처리
+   └─ Manages Slack thread & interactions  
 
 9. **__end__**  
-   └─ 최종 응답 반환
+   └─ Returns final reply  
+
+</details>
 
 ## 🤝 Project Structure
 
