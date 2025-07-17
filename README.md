@@ -5,17 +5,20 @@ LangGraph 기반 파이프라인과 MCP(Model Context Protocol) 인프라 위에
 Pinecone DB(의료 지식)와 Neo4j DB(환자·수술 기록)를 양방향으로 조회하고, Slack 워크스페이스와 실시간으로 연동되어 병원 내 의료진이 **정보를 즉시 공유**할 수 있습니다.
 </div>
 
+## 🏥 Clinical Collaboration
+
+This project was developed **in partnership with the Bio-Medical Informatics (BMI) Lab, 
+Seoul National University Hospital(서울대학교병원 의생명정보학 연구실)**
+
+> Special thanks to the lab members for providing domain expertise, sample datasets, and continuous feedback throughout development.
+
 ## 🗓️ Timeline
 2025.02 ~ 2025.08
 
+
 ## 👪 Team
-| 이름          | GitHub 프로필                                             |
-| ------------- | --------------------------------------------------------- |
-| 백다은        | [nuebaek](https://github.com/nuebaek)              |
-| 이재원        | [Jaewon1634](https://github.com/Jaewon1634)      |
-| 윤왕규       | [yoonwanggyu](https://github.com/yoonwanggyu)                |
-| 박혜원       | [nowhye](https://github.com/nowhye)               |
-| 백지연       | [wlsisl](https://github.com/wlsisl)              |
+**백다은** ([nuebaek](https://github.com/nuebaek)) · **이재원** ([Jaewon1634](https://github.com/Jaewon1634)) · **윤왕규** ([yoonwanggyu](https://github.com/yoonwanggyu)) · **박혜원** ([nowhye](https://github.com/nowhye)) · **백지연** ([wlsisl](https://github.com/wlsisl))
+
 
 ## 📚 Project Structure
 
