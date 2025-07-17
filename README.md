@@ -53,8 +53,8 @@ PEDI-ANESTHESIA-BOT/          # ◀︎ 레포 루트
 └── requirements.txt
 ```
 ## 🗺️ LangGraph Execution Flow
-<details>
-<summary>노드별 상세 설명 (클릭해서 펼치기)</summary>
+
+노드별 상세 설명
 
 1. **router_agent**  
    └─ 질문 의도를 분류해 <br>
@@ -78,7 +78,6 @@ PEDI-ANESTHESIA-BOT/          # ◀︎ 레포 루트
 
 9. **__end__**  
    └─ 최종 응답 반환
-</details>
 
 ## 🤝 Project Structure
 
