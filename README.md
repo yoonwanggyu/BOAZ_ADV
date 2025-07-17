@@ -56,6 +56,9 @@ PEDI-ANESTHESIA-BOT/          # ◀︎ 레포 루트
 └── requirements.txt
 ```
 ## 🗺️ LangGraph Execution Flow
+<p align="center">
+  <img src="docs/assets/langgraph_flow.png" alt="LangGraph flowchart" width="600"/>
+</p>
 
 노드별 상세 설명
 
