@@ -189,15 +189,42 @@ async def merge_and_respond_node(state: ChatbotState) -> ChatbotState:
     slack_response_text = ""
 
     try:
-        # 1. 최종 답변 생성
-        prompt = LLM_SYSTEM_PROMPTY.format(
-            Neo4j=state.get("neo4j_documents", ""),
-            VectorDB=state.get("vector_documents", ""),
-            question=question
-        )
-        response = await model.ainvoke(prompt)
-        final_answer = response.content
-        print(f"Final Answer Generated: {final_answer[:100]}...")
+        # 1. 평가 점수 확인 및 조건부 답변 생성
+        evaluation = state.get("llm_evaluation", {})
+        evaluation_score = evaluation.get("overall", 0)
+        
+        print(f"Evaluation Score: {evaluation_score}")
+        
+        if evaluation_score < 0.7:
+            # 0.7 미만인 경우 피드백 기반 응답 생성
+            print("--- Using Feedback-based Response (Score < 0.7) ---")
+            feedback_text = evaluation.get("reasoning", "검색 결과의 품질이 낮습니다.")
+            
+            # Neo4j와 VectorDB 정보도 함께 전달하여 부분적 정보 활용
+            neo4j_info = state.get("patient_info", "환자 정보를 찾을 수 없습니다.")
+            vectordb_info = state.get("vector_documents", "의학 정보를 찾을 수 없습니다.")
+            
+            prompt = FEEDBACK_BASED_RESPONSE_PROMPT.format(
+                question=question,
+                neo4j_info=neo4j_info,
+                vectordb_info=vectordb_info,
+                feedback=feedback_text,
+                score=evaluation_score
+            )
+            response = await model.ainvoke(prompt)
+            final_answer = response.content
+            print(f"Feedback-based Answer Generated: {final_answer[:100]}...")
+        else:
+            # 0.7 이상인 경우 기존 방식으로 답변 생성
+            print("--- Using Standard Response (Score >= 0.7) ---")
+            prompt = LLM_SYSTEM_PROMPTY.format(
+                Neo4j=state.get("patient_info", ""),
+                VectorDB=state.get("vector_documents", ""),
+                question=question
+            )
+            response = await model.ainvoke(prompt)
+            final_answer = response.content
+            print(f"Standard Answer Generated: {final_answer[:100]}...")
 
         # 2. 슬랙 전송 결정 여부에 따라 @멘션 로직 실행
         if state.get('decision_slack', 'no').lower() == 'yes':

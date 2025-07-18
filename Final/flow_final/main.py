@@ -39,7 +39,7 @@ async def run_chatbot(query, thread_id):
 # 실행용 main 함수
 # 테스트 Example : Sequential case (Neo4j -> VectorDB)
 async def main():
-    query = "Rett syndrome에 기저질환이 있는 환자가 greenstick fracture of the left distal femur 수술을 받은 후 주의사항에 대해 의학적으로 조사해서 자세한 내용을 윤왕규에게 slack으로 보내줘."
+    query = "백지연 환자가 받은 기존 수술 및 시술 이력에 대해 알려주고, 의학적으로 이러한 이력이 있는 경우 추후 수술 시 고려해야하는 주의사항에 대해 조사해서 자세한 내용을 백다은에게 slack으로 보내줘."
     print("="*20 + " 테스트 : Sequential Case " + "="*20)
     await run_chatbot(query, "thread-2")
 

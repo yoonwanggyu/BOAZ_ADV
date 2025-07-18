@@ -8,7 +8,6 @@ class ChatbotState(TypedDict):
     patient_info: Annotated[str, "순차 처리를 위한 환자 정보"]
     decision_slack: Annotated[str, "슬랙 전송 여부 결정"]
     tools_query: Annotated[List[str], "각 DB에 전달할 쿼리 리스트"]
-    neo4j_documents: Annotated[List, "Neo4j 검색 결과"]
     final_answer: Annotated[str, "최종 답변"]
     slack_response: Annotated[str, "슬랙 전송 결과"]
     messages: List[BaseMessage]
