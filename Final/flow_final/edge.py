@@ -18,6 +18,7 @@ def create_chatbot_graph():
     workflow.add_node("vector_retrieval", vector_retrieval_node)
     workflow.add_node("llm_evaluation_node", llm_evaluation_node)
     workflow.add_node("merge_and_respond", merge_and_respond_node)
+    workflow.add_node("reset_state_node", reset_state_node)
 
     # 2. 시작점(START) 엣지 연결
     # 라우터와 슬랙 결정은 병렬로 시작
@@ -65,8 +66,9 @@ def create_chatbot_graph():
         }
     )
 
-    # 8. 종료 엣지
-    workflow.add_edge("merge_and_respond", END)
+    # 8. 종료 엣지 
+    workflow.add_edge("merge_and_respond", "reset_state_node")
+    workflow.add_edge("reset_state_node", END)
 
     # 9. 그래프 컴파일
     graph = workflow.compile(checkpointer=memory)

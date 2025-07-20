@@ -304,7 +304,10 @@ async def merge_and_respond_node(state: ChatbotState) -> ChatbotState:
             ===================================
 
             만약 특정 소스가 사용되지 않았다면 "사용되지 않음"이라고 표시하세요.
-            반드시 원문을 그대로 인용하고, 요약하거나 변형하지 마세요."""
+            반드시 원문을 그대로 인용하고, 요약하거나 변형하지 마세요.
+            
+            주의사항:
+            - 줄바꿈 이스케이프 시퀀스, <div> 등의 HTML 태그는 제거하고 순수 텍스트만 추출하세요."""
 
             source_response = await model.ainvoke(source_extraction_prompt)
 
@@ -390,3 +393,26 @@ async def merge_and_respond_node(state: ChatbotState) -> ChatbotState:
         slack_response=slack_response,
         messages=[HumanMessage(content=question), AIMessage(content=final_answer)]
     )
+
+# 상태 초기화 노드(한 사이클 종료 후 ChatbotState의 모든 필드를 기본값으로 초기화)
+async def reset_state_node(state: ChatbotState) -> ChatbotState:
+    print("\n--- [Node] Reset State ---")
+    adaptive_optimizer.reset()  # 전역 optimizer 상태도 초기화
+    return ChatbotState(
+        question="",
+        flow_type="",
+        patient_info="",
+        decision_slack="",
+        tools_query=["", ""],
+        final_answer="",
+        slack_response="",
+        messages=[],
+        current_query="",
+        query_variants=[],
+        vector_documents="",
+        llm_evaluation={},
+        loop_cnt=0,
+        optimization_completed=False,
+        should_retry_optimization=False
+    )
+

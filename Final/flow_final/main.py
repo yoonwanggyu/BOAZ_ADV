@@ -59,6 +59,7 @@ async def run_chatbot(query, thread_id):
         "loop_cnt": 0,
         "messages": [HumanMessage(content=query)]
     }
+    answer_state = None
     async for event in graph.astream(initial_state, config=config):
         for node_name, node_state in event.items():
             print(f"--- Event: Node '{node_name}' finished ---")
@@ -68,10 +69,16 @@ async def run_chatbot(query, thread_id):
                 print(f"  - 최종 답변: {node_state['final_answer']}")
                 if node_state.get('slack_response'):
                     print(f"  - 슬랙 응답: {node_state['slack_response']}")
-                    return node_state.get('slack_response')
-                else:
-                    print("="*50)
-                    return node_state.get('final_answer')
+                answer_state = node_state  # 답변 상태 저장
+            if node_name == 'reset_state_node':
+                print("--- 상태 초기화 완료 ---")
+
+    # 답변은 merge_and_respond 상태에서 반환
+    if answer_state:
+        if answer_state.get('slack_response'):
+            return answer_state.get('slack_response')
+        else:
+            return answer_state.get('final_answer')
 
 # 실행용 main 함수
 # 테스트 Example : Sequential case (Neo4j -> VectorDB)
