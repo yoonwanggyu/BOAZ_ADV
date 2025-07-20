@@ -62,22 +62,22 @@ async def run_chatbot(query, thread_id):
     async for event in graph.astream(initial_state, config=config):
         for node_name, node_state in event.items():
             print(f"--- Event: Node '{node_name}' finished ---")
-            if node_name == END:
+            if node_name == 'merge_and_respond':
                 print("\n\n" + "="*50)
                 print("최종 실행 결과:")
                 print(f"  - 최종 답변: {node_state['final_answer']}")
                 if node_state.get('slack_response'):
                     print(f"  - 슬랙 응답: {node_state['slack_response']}")
-                    return node_state.get("slack_response")
+                    return node_state.get('slack_response')
                 else:
                     print("="*50)
-                    return node_state.get("final_answer")
+                    return node_state.get('final_answer')
 
 # 실행용 main 함수
 # 테스트 Example : Sequential case (Neo4j -> VectorDB)
 def main():
     initialize_chatbot()
-    query = "박혜원 환자의 나이대와 진단내역을 고려했을 때, 마취시 주의해야 할 사항을 파악해서 백다은에게 전달해줘"
+    query = "박혜원 환자의 나이대와 진단내역에 대해 백다은에게 알려줘"
     print("="*20 + " 테스트 : Sequential Case " + "="*20)
     result = Runner.run_sync(query, "thread-2")
     print(result)

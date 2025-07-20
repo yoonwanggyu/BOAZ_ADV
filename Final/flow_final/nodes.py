@@ -229,14 +229,27 @@ async def merge_and_respond_node(state: ChatbotState) -> ChatbotState:
         # 1.평가 점수 확인 및 조건부 답변 생성
         evaluation = state.get("llm_evaluation", {})
         evaluation_score = evaluation.get("overall", 0)
+        flow_type = state.get("flow_type", "")
         
         print(f"Evaluation Score: {evaluation_score}")
+        print(f"Flow Type: {flow_type}")
         
         # Neo4j와 VectorDB 정보 미리 가져오기
         neo4j_info = state.get("patient_info", "")
         vectordb_info = state.get("vector_documents", "")
         
-        if evaluation_score < 0.7:
+        # Neo4j only 플로우는 평가 없이 바로 정상 답변 생성
+        if flow_type == "neo4j_only":
+            print("--- Neo4j Only 플로우: 평가 건너뛰고 정상 답변 생성 ---")
+            prompt = LLM_SYSTEM_PROMPTY.format(
+                Neo4j=neo4j_info,
+                VectorDB=vectordb_info,
+                question=question
+            )
+            response = await model.ainvoke(prompt)
+            final_answer = response.content
+            print(f"Neo4j 전용 응답 생성: {final_answer[:100]}...")
+        elif evaluation_score < 0.7:
             # 0.7 미만인 경우 피드백 기반 응답 생성
             print("--- 피드백 기반 답변 사용(Score < 0.7) ---")
             feedback_text = evaluation.get("reasoning", "검색 결과의 품질이 낮습니다.")
@@ -296,6 +309,9 @@ async def merge_and_respond_node(state: ChatbotState) -> ChatbotState:
             source_response = await model.ainvoke(source_extraction_prompt)
 
         # 2. 슬랙 전송 결정 여부에 따라 @멘션 로직 실행
+        recipient_name = None
+        text_to_send = ""
+        
         if state.get('decision_slack', 'no').lower() == 'yes':
             print("--- @mention과 함께 슬랙 전송(Dynamic User Lookup) ---")
 
@@ -305,7 +321,6 @@ async def merge_and_respond_node(state: ChatbotState) -> ChatbotState:
                 raise ValueError("SLACK_CHANNEL 환경 변수가 .env 파일에 설정되지 않았습니다.")
 
             # 정교한 정규 표현식으로 수신인 이름 추출
-            recipient_name = None
             match = re.search(r"(\S+)\s*(?:에게|님에게|한테)", question)
             if match:
                 recipient_name = match.group(1).strip()
@@ -343,7 +358,8 @@ async def merge_and_respond_node(state: ChatbotState) -> ChatbotState:
             print(f"User ID Found: {user_id_to_mention}")
 
             # @멘션을 포함한 최종 메시지 텍스트 생성
-            text_to_send = f"<@{user_id_to_mention}> 님의 업무 보조를 위해 전송된 정보입니다.\n\n- {final_answer}\n\n [정답 근거] \n\n{source_response.content}"
+            source_content = source_response.content if source_response else "검색 결과 추출을 건너뛰었습니다."
+            text_to_send = f"<@{user_id_to_mention}> 님의 업무 보조를 위해 전송된 정보입니다.\n\n- {final_answer}\n\n [정답 근거] \n\n{source_content}"
 
             # slack_post_message 도구를 안전하게 호출
             slack_tool = tools_dict.get("slack_post_message")
@@ -365,8 +381,12 @@ async def merge_and_respond_node(state: ChatbotState) -> ChatbotState:
             final_answer = "답변을 생성하는 중 오류가 발생했습니다."
 
     # 3. 최종 상태 반환
+    slack_response = ""
+    if recipient_name and text_to_send:
+        slack_response = recipient_name + ' ' + ' '.join(text_to_send.split(' ')[1:])
+    
     return ChatbotState(
         final_answer=final_answer,
-        slack_response=slack_response_text,
+        slack_response=slack_response,
         messages=[HumanMessage(content=question), AIMessage(content=final_answer)]
     )
