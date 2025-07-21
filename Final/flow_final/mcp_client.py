@@ -11,13 +11,13 @@ async def setup_mcp_client():
     mcp_client = MultiServerMCPClient(
         {
             "run_contextual_rag": {
-                "command": "/root/.venv/bin/python",
-                "args": ["/root/Flow/neo4j_server.py"],
+                "command": "/mnt/c/Users/USER/BOAZ_ADV/boaz_linux/bin/python",
+                "args": ["/mnt/c/Users/USER/BOAZ_ADV/jiyeon/final/flow_final/neo4j_server.py"],
                 "transport": "stdio",
             },
             "VectorDB_retriever": {
-                "command": "/root/.venv/bin/python",
-                "args": ["/root/Flow/pinecone_server.py"],
+                "command": "/mnt/c/Users/USER/BOAZ_ADV/boaz_linux/bin/python",
+                "args": ["/mnt/c/Users/USER/BOAZ_ADV/jiyeon/final/flow_final/pinecone_server.py"],
                 "transport": "stdio",
             },
             "slack": {

@@ -7,20 +7,20 @@ import asyncio
 # Runner 클래스 추가
 class Runner:
     @classmethod
-    async def run(cls, query, thread_id):
-        return await run_chatbot(query, thread_id)
+    async def run(cls, query, thread_id, user_name):
+        return await run_chatbot(query, thread_id, user_name)
 
     @classmethod
-    def run_sync(cls, query, thread_id):
+    def run_sync(cls, query, thread_id, user_name):
         try:
             loop = asyncio.get_running_loop()
             future = asyncio.ensure_future(
-                cls.run(query, thread_id)
+                cls.run(query, thread_id, user_name)
             )
             return loop.run_until_complete(future)
         except RuntimeError:
             return asyncio.run(
-                cls.run(query, thread_id)
+                cls.run(query, thread_id, user_name)
             )
 
 # 전역 변수들
@@ -46,7 +46,7 @@ def initialize_chatbot():
     return tools_dict, graph
 
 # 챗봇 실행 함수
-async def run_chatbot(query, thread_id):
+async def run_chatbot(query, thread_id, user_name):
     global tools_dict, graph
     
     # 초기화가 안 되어 있으면 초기화
@@ -57,7 +57,8 @@ async def run_chatbot(query, thread_id):
     initial_state = {
         "question": query,
         "loop_cnt": 0,
-        "messages": [HumanMessage(content=query)]
+        "messages": [HumanMessage(content=query)],
+        "user_name": user_name,
     }
     answer_state = None
     async for event in graph.astream(initial_state, config=config):
@@ -86,7 +87,7 @@ def main():
     initialize_chatbot()
     query = "박혜원 환자의 나이대와 진단내역에 대해 백다은에게 알려줘"
     print("="*20 + " 테스트 : Sequential Case " + "="*20)
-    result = Runner.run_sync(query, "thread-2")
+    result = Runner.run_sync(query, "thread-2", "user-1")
     print(result)
 
 if __name__ == "__main__":
