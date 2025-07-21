@@ -11,6 +11,7 @@ class ChatbotState(TypedDict):
     final_answer: Annotated[str, "최종 답변"]
     slack_response: Annotated[str, "슬랙 전송 결과"]
     messages: List[BaseMessage]
+    user_name: Annotated[str, "사용자 이름"]
     current_query: Annotated[str, "현재 VectorDB 검색에 사용되는 쿼리"]
     query_variants: Annotated[List[str], "생성된 쿼리 변형 목록"]
     vector_documents: Annotated[str, "VectorDB 검색 결과 텍스트"]

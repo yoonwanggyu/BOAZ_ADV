@@ -389,7 +389,30 @@ else: # "chatbot" 페이지
         
         # 사용자 입력 프롬프트만 바로 챗봇에 전달
         try:
-            result = Runner.run_sync(user_prompt, "thread-2")
+            # 1. 이전 대화 내역 합치기
+            messages = st.session_state.sessions[st.session_state.current_session_index]
+            history = ""
+            for m in messages:
+                if m["role"] == "user":
+                    history += f"사용자: {m['content']}\n"
+                else:
+                    history += f"챗봇: {m['content']}\n"
+
+            # 2. 시스템 지침 추가
+            system_instruction = (
+                "여기까지는 이전 대화 내역입니다.\n"
+                "이전 대화 내역에서는 절대로 slack 메세지 전송 여부를 판단하지 마세요.\n"
+                "만약 Slack(슬랙)으로 메시지를 보내야 하는지 판단할 때는, "
+                "반드시 다음 나오는 사용자 질문(가장 최근 질문)에서만 판단하세요\n"                
+                "다음은 최근 사용자 질문입니다. 다음 질문에서만 slack 메세지 전송 여부를 파악하세요\n"
+            )
+
+            # 3. 새 질문과 합치기
+            user_prompt = st.session_state["pending_prompt"]
+            full_query = history + system_instruction + f"현재 질문: {user_prompt}\n"
+
+            # 3. LLM에 전달
+            result = Runner.run_sync(full_query, "thread-2", user_name=user_name)
             st.write(f"디버깅: result = {result}")
         except Exception as e:
             st.error(f"챗봇 실행 오류: {e}")
@@ -402,6 +425,23 @@ else: # "chatbot" 페이지
             st.rerun()
         
         answer = result
+        
+        # 답변만 세션에 추가
+        st.session_state.sessions[st.session_state.current_session_index].append({"role": "assistant", "content": answer})
+        # 답변을 바로 화면에 출력
+        st.markdown(f"""
+        <div style='display:flex; justify-content:flex-start; margin-bottom:8px;'>
+            <div style='background:#b3d8f6; color:#222; border-radius:16px 16px 16px 4px; padding:12px 18px; max-width:70%; box-shadow:0 2px 8px #0001;'>
+                {answer}
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+        # slack response일 때 전송 완료 안내 메시지 추가
+        if answer and "전달하는 메세지 입니다." in answer:
+            st.markdown("<div style='color:#228B22; font-weight:700; margin-bottom:1em;'>챗봇이 Slack으로 전송을 완료하였습니다.</div>", unsafe_allow_html=True)
+        st.session_state["pending_prompt"] = None
+        st.rerun()
+
         # 답변만 세션에 추가
         st.session_state.sessions[st.session_state.current_session_index].append({"role": "assistant", "content": answer})
         # 답변을 바로 화면에 출력
@@ -414,3 +454,4 @@ else: # "chatbot" 페이지
         """, unsafe_allow_html=True)
         st.session_state["pending_prompt"] = None
         st.rerun()
+
