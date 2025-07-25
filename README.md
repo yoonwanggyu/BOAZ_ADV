@@ -1,4 +1,4 @@
-![header](https://capsule-render.vercel.app/api?type=Waving&color=auto&height=300&fontAlignY=50&fontAlign=50&section=header&text=소마챗%20:%20AI%20Assistant%20for%20Pediatric%20Anesthesia&fontSize=30)
+![header](https://capsule-render.vercel.app/api?type=Waving&color=auto&height=300&fontAlignY=50&fontAlign=50&section=header&text=소마챗%20:%20AI%20Agent%20for%20Pediatric%20Anesthesia&fontSize=30)
 <div align=center>
   
 **소마챗**은 소아 마취 전문 의료진의 진료 흐름에 자연스럽게 녹아들어,<br>
@@ -87,7 +87,7 @@
 ## 🗂️ Database
 의료 데이터의 성격과 활용 목적에 최적화된 이중 데이터베이스 구조를 설계하였습니다.
 
-1. **Graph Database (Neo4j)**  
+1️⃣ **Graph Database (Neo4j)**  
    : 대한소아마취학회 APM 학회지의 Pediatric Anesthesia 증례 보고서 33건을 기반으로 구축
 
    <p align="center">
@@ -106,7 +106,7 @@
 
    </details>
 
-2. **Vector Database (Pinecone)**  
+2️⃣ **Vector Database (Pinecone)**  
    : Pediatric Anesthesia 논문 95건 (APM 학회지), PubMed Abstract 약 26,000건 기반 구축
 
    <details>
@@ -173,17 +173,88 @@
 
 #### 9. ✅ end – 최종 응답 반환  
 • 생성된 응답을 사용자에게 반환하며 플로우를 종료합니다.
-
 </details>
 
-## 🤝 Project Structure
+## 🧪 Chatbot Evaluation Scenarios
+1️⃣ 챗봇이 **내부 데이터베이스에 정확히 접근하여 답변을 생성하는지** 확인합니다.<br>
+2️⃣ 사용자와의 멀티턴 대화가 원활하게 이루어지는지**를 검증합니다.<br>
+3️⃣ 사용자가 **Slack 전송을 요청했을 때 해당 내용이 자동으로 Slack에 전송되는지** 여부를 확인합니다.<br>
+<p align="center">
+  <img src="pictures/ECF53CD0-A2FC-4AA4-8EA7-0F988408EA63.jpeg" alt="LangGraph flowchart" width="600"/>
+  <img src="pictures/2FD3F49A-9CEA-4AA1-B7E5-D06842A27AED.jpeg" alt="LangGraph flowchart" width="600"/>
+  <img src="pictures/C98AAE6C-26FD-4705-A0A3-105B5B2414AF.jpeg" alt="LangGraph flowchart" width="600"/>
+  <img src="pictures/3144F751-70F8-4D67-B7AE-E86A464E8BCF.jpeg" alt="LangGraph flowchart" width="600"/>
+</p>
 
-이 프로젝트에 기여하고 싶다면, 리포지토리를 포크하고 풀 리퀘스트를 생성하세요.   
-버그 또는 기능 요청에 대한 이슈를 열어도 좋습니다.
+## 🚀 Getting Started
+1️⃣ 레포지토리 클론
+```bash
+git clone 
+cd your-repo-name
+```
+2️⃣ 필수 라이브러리 설치
+```bash
+pip install -r requirements.txt
+```
+
+3️⃣ 환경 변수 설정 (.env 파일 생성)<br>
+📌 Neo4j 그래프 DB나 Pinecone 벡터 DB에 연결된 실제 환경이 필요하다면, 프로젝트 팀원에게 별도로 문의해주세요.
+```bash
+# GPT API 설정
+OPENAI_API_KEY=''
+
+# Neo4J 설정
+NEO4J_URI=''
+DATABASE=''
+AUTH_LINK=''
+
+# Pinecone 설정
+PINECONE_API_KEY=''
+
+# Slack MCP 설정
+SLACK_BOT_TOKEN=''
+SLACK_TEAM_ID=''
+```
+
+4️⃣ mcp_client.py 실행을 위한 파이썬 경로 설정
+```bash
+"command": "본인 로컬 PYTHON 경로"
+```
+
+5️⃣ LangGraph 기반 챗봇 로직 실행
+```bash
+python main.py
+```
+
+6️⃣ 의료진용 Streamlit UI 실행
+```bash
+streamlit run medical_chat_bot.py
+```
+
+## 🙌 Contributing
+🎉 이 프로젝트는 오픈소스 커뮤니티의 기여를 적극 환영합니다!
+기여를 원하신다면 아래 단계를 따라주세요:
+
+1️⃣ 레포지토리 포크<br>
+2️⃣ 새로운 브랜치 생성
+```bash
+git checkout -b feature/기능명
+```
+3️⃣ 변경 사항 커밋
+```bash
+git commit -m "기능 설명"
+```
+4️⃣ 브랜치 푸시
+```bash
+git push origin feature/기능명
+```
+5️⃣ Pull Request 생성
+```bash
+GitHub에서 PR을 생성하고, 변경 내용을 설명해 주세요.
+```
+
+💡 버그 제보나 기능 제안은 언제든지 이슈 등록을 환영합니다!
 
 ## 📜 License
 
-이 프로젝트는 MIT 라이선스에 따라 라이선스가 부여됩니다. 자세한 내용은 `LICENSE` 파일을 참조하세요.
-```
-
-이제 이 `README.md` 파일을 프로젝트에 반영할 수 있습니다. 😊
+이 프로젝트는 MIT 라이선스 하에 배포됩니다.자세한 내용은 LICENSE 파일을 참고해 주세요.
