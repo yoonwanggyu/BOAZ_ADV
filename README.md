@@ -1,6 +1,5 @@
-![header](https://capsule-render.vercel.app/api?type=Waving&color=auto&height=300&fontAlignY=50&fontAlign=50&section=header&text=땡큐소아마취&fontSize=50)
+![header](https://capsule-render.vercel.app/api?type=Waving&color=auto&height=300&fontAlignY=50&fontAlign=50&section=header&text=소마챗%20:%20AI%20Assistant%20for%20Pediatric%20Anesthesia&fontSize=30)
 <div align=center>
-
 **소마챗**은 소아 마취 전문 의료진의 진료 흐름에 자연스럽게 녹아들어,<br>
 **정확성과 신뢰성**을 바탕으로 즉각적인 처치 판단을 지원하는 AI 어시스턴트입니다.
 
