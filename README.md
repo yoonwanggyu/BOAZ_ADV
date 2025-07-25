@@ -22,6 +22,7 @@ Seoul National University Hospital(서울대학교병원 의생명정보학 연�
 </p>
 
 **이재원** ([Jaewon1634](https://github.com/Jaewon1634)) · **백지연** ([wlsisl](https://github.com/wlsisl)) · **백다은** ([nuebaek](https://github.com/nuebaek)) · **박혜원** ([nowhye](https://github.com/nowhye)) · **윤왕규** ([yoonwanggyu](https://github.com/yoonwanggyu)) 
+> 📝 This project was carried out by the 23rd cohort of the **BOAZ**.
 
 
 ## 📚 Project Structure
