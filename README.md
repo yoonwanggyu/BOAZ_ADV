@@ -1,9 +1,25 @@
 ![header](https://capsule-render.vercel.app/api?type=Waving&color=auto&height=300&fontAlignY=50&fontAlign=50&section=header&text=땡큐소아마취&fontSize=50)
 <div align=center>
 
-LangGraph 기반 파이프라인과 MCP(Model Context Protocol) 인프라 위에 구축된 **소아마취 도메인 특화 AI 챗봇**입니다.  
-Pinecone DB(의료 지식)와 Neo4j DB(환자·수술 기록)를 양방향으로 조회하고, Slack 워크스페이스와 실시간으로 연동되어 병원 내 의료진이 **정보를 즉시 공유**할 수 있습니다.
+**소마챗(SomaChat)** 은 소아 마취 전문 의료진의 의사결정 흐름에 자연스럽게 녹아들어,  
+**빠르고 정확한 처치 판단을 지원하는 실시간 AI 어시스턴트**입니다.
+
+
+🩺 **현장의 필요를 반영한 구조적 지원**
+
+1️⃣ **다양한 임상 상황에서의 질문**을 이해하고,  
+2️⃣ 환자 정보부터 처치 지침, 관련 의학 지식까지 **포괄적인 검색과 분석**을 수행하며,  
+3️⃣ 검색 결과를 요약하여 **Slack을 통해 담당자에게 자동 전달**합니다.
 </div>
+
+## 🚀 **기술 인프라 개요**
+
+- **LangGraph** 기반 멀티스텝 대화 파이프라인  
+- **MCP (Model Context Protocol)** 아키텍처 위 구성  
+- **Pinecone**: 의료 지식 벡터 검색용 DB  
+- **Neo4j**: 환자·수술 기록 그래프 DB  
+- **Slack API** 연동을 통한 조직 내 실시간 커뮤니케이션
+
 
 ## 🏥 Clinical Collaboration
 
