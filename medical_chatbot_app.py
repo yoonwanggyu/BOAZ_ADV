@@ -3,9 +3,7 @@ from main import *
 from io import StringIO
 import streamlit as st
 import asyncio
-import asyncio
         
-
 thread_id = "thread-2"
 
 # 페이지 설정
