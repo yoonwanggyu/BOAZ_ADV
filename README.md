@@ -18,10 +18,10 @@ Seoul National University Hospital(서울대학교병원 의생명정보학 연�
 
 ## 👪 Team
 <p align="center">
-  <img src="" alt="LangGraph flowchart" width="600"/>
+  <img src="9FCCE7B8-6EC3-406D-8927-5A748828A52B.jpeg" alt="LangGraph flowchart" width="600"/>
 </p>
 
-**백다은** ([nuebaek](https://github.com/nuebaek)) · **이재원** ([Jaewon1634](https://github.com/Jaewon1634)) · **윤왕규** ([yoonwanggyu](https://github.com/yoonwanggyu)) · **박혜원** ([nowhye](https://github.com/nowhye)) · **백지연** ([wlsisl](https://github.com/wlsisl))
+**이재원** ([Jaewon1634](https://github.com/Jaewon1634)) · **백지연** ([wlsisl](https://github.com/wlsisl)) · **백다은** ([nuebaek](https://github.com/nuebaek)) · **박혜원** ([nowhye](https://github.com/nowhye)) · **윤왕규** ([yoonwanggyu](https://github.com/yoonwanggyu)) 
 
 
 ## 📚 Project Structure
