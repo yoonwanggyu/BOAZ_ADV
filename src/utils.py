@@ -1,4 +1,4 @@
-from state import *
+from src.langgraph.state import *
 
 max_attempts = 3
 

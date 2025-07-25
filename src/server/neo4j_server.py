@@ -1,4 +1,4 @@
-from embedder import *
+from src.server.embedder import *
 
 from neo4j import GraphDatabase
 from neo4j_graphrag.llm import OpenAILLM

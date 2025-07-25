@@ -1,6 +1,6 @@
 from typing import List, Dict, Optional
 from langchain_openai import ChatOpenAI
-from state import ChatbotState
+from src.langgraph.state import ChatbotState
 import json, re
 import pandas as pd
 

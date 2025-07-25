@@ -1,4 +1,4 @@
-from src.edge import *
+from src.langgraph.edge import *
 from src.mcp_client import *
 
 from dotenv import load_dotenv
