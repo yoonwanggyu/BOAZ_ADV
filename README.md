@@ -1,4 +1,4 @@
-![header](https://capsule-render.vercel.app/api?type=Waving&color=auto&height=300&fontAlignY=50&fontAlign=50&section=header&text=소마챗%20:%20AI%20Agent%20for%20Pediatric%20Anesthesia&fontSize=30)
+![header](https://capsule-render.vercel.app/api?type=Waving&color=auto&height=300&fontAlignY=50&fontAlign=50&section=header&text=%EC%86%8C%EB%A7%88%EC%B1%97%20%3A%20Agentic%20RAG%20%EA%B8%B0%EB%B0%98%20%EC%86%8C%EC%95%84%EB%A7%88%EC%B7%A8%20%EC%97%85%EB%AC%B4%EC%A7%80%EC%9B%90%20%EC%B1%97%EB%B4%87&fontSize=30)
 <div align=center>
   
 **소마챗**은 소아 마취 전문 의료진의 진료 흐름에 자연스럽게 녹아들어,<br>
