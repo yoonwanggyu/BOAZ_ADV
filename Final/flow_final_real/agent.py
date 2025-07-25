@@ -5,4 +5,4 @@ from langchain_openai import ChatOpenAI
 load_dotenv()
 
 # 답변용 OpenAI LLM 설정
-model = ChatOpenAI(temperature=0.2, model = "gpt-4o") # 보수적인 답변을 위해 temperature는 0.2로 제한
+model = ChatOpenAI(temperature=0.2, model = "gpt-4.1") # 보수적인 답변을 위해 temperature는 0.2로 제한

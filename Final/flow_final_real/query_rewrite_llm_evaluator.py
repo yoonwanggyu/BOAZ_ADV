@@ -6,7 +6,7 @@ import re
 import pandas as pd
 
 # NIH(National Institutes of Health) 에서 제공하는 소아마취 동의어 목록을 파싱하여 사전 생성
-xls_path = "/mnt/c/Users/USER/BOAZ_ADV/jiyeon/final/flow_final/Pediatric_Terminology.xls"
+xls_path = "/Users/yoon/BOAZ_ADV/Final/flow_final_real/Pediatric_Terminology.xls"
 
 # NIH 동의어 목록을 파싱하여 사전 생성
 def build_term_dict_from_xls(xls_path):
@@ -60,7 +60,7 @@ class AdaptiveQueryOptimizer:
         self.llm = ChatOpenAI(model=model_name, temperature=temperature)
         self.attempt_count = 0
         self.max_attempts = max_attempts
-        self.satisfaction_threshold = 0.7  # 만족 임계값
+        self.satisfaction_threshold = 0.4 # 만족 임계값
         self.original_question: str = ""
         self.original_question_en: str = ""
         
@@ -351,7 +351,7 @@ class LLMEvaluator:
                 data["overall"] = round(0.2*data["relevance"] + 0.5*data["faithfulness"] + 0.3*data["completeness"], 3)
             
             # 의료 도메인 특화 임계값
-            data["recommended_threshold"] = 0.7  # 높은 신뢰성 요구
+            data["recommended_threshold"] = 0.4  # 높은 신뢰성 요구
             print(f"최종 평가 결과: overall={data['overall']}")  # 디버깅용 출력
             return data
 
@@ -379,7 +379,7 @@ class LLMEvaluator:
             return current_attempt < max_attempts
         
         overall_score = evaluation_result.get("overall", 0)
-        threshold = evaluation_result.get("recommended_threshold", 0.7)
+        threshold = evaluation_result.get("recommended_threshold", 0.4)
         
         should_retry = overall_score < threshold and current_attempt < max_attempts
         

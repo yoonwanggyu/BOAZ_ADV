@@ -10,30 +10,31 @@ load_dotenv()
 async def setup_mcp_client():
     mcp_client = MultiServerMCPClient(
         {
-            "run_contextual_rag": {
-                "command": "/mnt/c/Users/USER/BOAZ_ADV/boaz_linux/bin/python",
-                "args": ["/mnt/c/Users/USER/BOAZ_ADV/jiyeon/final/flow_final/neo4j_server.py"],
-                "transport": "stdio",
-            },
-            "VectorDB_retriever": {
-                "command": "/mnt/c/Users/USER/BOAZ_ADV/boaz_linux/bin/python",
-                "args": ["/mnt/c/Users/USER/BOAZ_ADV/jiyeon/final/flow_final/pinecone_server.py"],
-                "transport": "stdio",
-            },
-            "slack": {
-                "command": "npx",
-                "args": [
-                    "-y",
-                    "@modelcontextprotocol/server-slack"
-                ],
-                "transport": "stdio", 
-                "env": {
-                    "SLACK_BOT_TOKEN": os.getenv("SLACK_BOT_TOKEN"),
-                    "SLACK_TEAM_ID": os.getenv("SLACK_TEAM_ID"),
-                }
+        "neo4j_retriever": {
+            "command": "/opt/anaconda3/envs/boaz/bin/python",
+            "args": ["neo4j_server.py"],
+            "transport": "stdio",
+        },
+        "VectorDB_retriever": {
+            "command": "/opt/anaconda3/envs/boaz/bin/python",
+            "args": ["pinecone_server.py"],
+            "transport": "stdio",
+        },
+        # Slack MCP 서버 설정
+        "slack": {
+            "command": "npx",
+            "args": [
+                "-y",
+                "@modelcontextprotocol/server-slack"
+            ],
+            "transport": "stdio", 
+            "env": {
+                "SLACK_BOT_TOKEN": os.getenv("SLACK_BOT_TOKEN"),
+                "SLACK_TEAM_ID": os.getenv("SLACK_TEAM_ID"),
             }
-        } # type: ignore
-    )
+        }
+    }
+)
     
     mcp_tools = await mcp_client.get_tools()
     tools_dict = {tool.name: tool for tool in mcp_tools}

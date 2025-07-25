@@ -32,7 +32,9 @@ def initialize_chatbot():
     
     # MCP 툴 확인
     tools_dict = setup_mcp_client_sync()
-    
+    if not tools_dict:
+        print("MCP 도구를 불러오지 못했습니다. 서버 설정 또는 연결 상태를 확인하세요.")
+        
     print("현재 tools_dict에 등록된 MCP 툴 목록:")
     for k, v in tools_dict.items():
         print(f"  - {k}: {v}")

@@ -40,7 +40,7 @@ def create_retriever():
     reranker_model = HuggingFaceCrossEncoder(model_name="ncbi/MedCPT-Cross-Encoder")
     compressor_retriever = CrossEncoderReranker(
         model=reranker_model,
-        top_n=5
+        top_n=3
     )
     # 기본 검색기 → 압축된 Retriever로 감싸기
     base_retriever = vectorstore.as_retriever(search_kwargs={"k": 10})

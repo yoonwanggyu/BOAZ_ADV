@@ -157,7 +157,7 @@ def build_context_from_vector(driver, query_text: str, top_k: int = 5) -> str:
 # Neo4j 데이터베이스에서 컨텍스트를 검색하고 LLM으로 답변을 생성
 def run_contextual_rag(query_text: str):
     try:
-        context = build_context_from_vector(driver, query_text, top_k=1)
+        context = build_context_from_vector(driver, query_text, top_k=2)
 
         prompt = f"context: {context}\n\n질문: {query_text}"
         response = llm.invoke(prompt)

@@ -33,8 +33,9 @@ async def router_agent(state: ChatbotState) -> ChatbotState:
     )
 
 # 슬랙 사용 여부 판단 노드(간단한 규칙 기반으로 슬랙 사용 여부를 1차 판단하는 헬퍼 함수)
+SEND_COMMANDS = ["보내줘", "전송해줘", "전달해줘"]
+
 def determine_slack_usage(query: str) -> str:
-    SEND_COMMANDS = ["보내줘", "전송해줘", "전달해줘"]
     return 'Yes' if any(cmd in query for cmd in SEND_COMMANDS) or "에게" in query else 'No'
 
 # 슬랙 메시지 전송 최종 결정 노드(사용자 질문을 바탕으로 슬랙 메시지 전송이 필요한지 최종 결정하는 노드)
@@ -42,11 +43,13 @@ async def decision_slack(state: ChatbotState):
     print("\n--- [Node] Decision Slack ---")
     user_query = state["question"]
     
-    # 규칙 기반으로 1차 판단
+    # 1) Rule-based 판단
     use_slack = determine_slack_usage(user_query)
     
-    # 최종 결정을 response 변수에 저장(기본값은 규칙 기반 판단 결과)
-    response = use_slack
+    # 2) 패턴은 일부 있지만 명확하지 않은 경우 → LLM 판단
+    if use_slack.lower() == 'no' and ("에게" in user_query or any(cmd in user_query for cmd in SEND_COMMANDS)):
+        llm_response = await model.ainvoke(f"{LLM_DECISION_SLACK}\n\n{user_query}")
+        response = llm_response
     
     print(f"Slack Decision: {response}")
     return ChatbotState(decision_slack=response)
@@ -304,7 +307,10 @@ async def merge_and_respond_node(state: ChatbotState) -> ChatbotState:
             ===================================
 
             만약 특정 소스가 사용되지 않았다면 "사용되지 않음"이라고 표시하세요.
-            반드시 원문을 그대로 인용하고, 요약하거나 변형하지 마세요."""
+            반드시 원문을 그대로 인용하고, 요약하거나 변형하지 마세요.
+            
+            주의사항:
+            - 줄바꿈 이스케이프 시퀀스, <div> 등의 HTML 태그는 제거하고 순수 텍스트만 추출하세요."""
 
             source_response = await model.ainvoke(source_extraction_prompt)
 
@@ -358,8 +364,9 @@ async def merge_and_respond_node(state: ChatbotState) -> ChatbotState:
             print(f"User ID Found: {user_id_to_mention}")
 
             # @멘션을 포함한 최종 메시지 텍스트 생성
+            user_name = state.get("user_name", "사용자")
             source_content = source_response.content if source_response else "검색 결과 추출을 건너뛰었습니다."
-            text_to_send = f"<@{user_id_to_mention}> 님의 업무 보조를 위해 전송된 정보입니다.\n\n- {final_answer}\n\n [정답 근거] \n\n{source_content}"
+            text_to_send = f"{user_name}님이 전달하는 메세지입니다.\n<@{user_id_to_mention}> 님의 업무 보조를 위해 전송된 정보입니다.\n\n- {final_answer}\n\n [정답 근거] \n\n{source_content}"
 
             # slack_post_message 도구를 안전하게 호출
             slack_tool = tools_dict.get("slack_post_message")
@@ -383,10 +390,32 @@ async def merge_and_respond_node(state: ChatbotState) -> ChatbotState:
     # 3. 최종 상태 반환
     slack_response = ""
     if recipient_name and text_to_send:
-        slack_response = recipient_name + ' ' + ' '.join(text_to_send.split(' ')[1:])
+        slack_response = f"{user_name}님이 전달하는 메세지입니다." + recipient_name + text_to_send[text_to_send.index("님의 업무 보조"):]
     
     return ChatbotState(
         final_answer=final_answer,
         slack_response=slack_response,
         messages=[HumanMessage(content=question), AIMessage(content=final_answer)]
+    )
+
+# 상태 초기화 노드(한 사이클 종료 후 ChatbotState의 모든 필드를 기본값으로 초기화)
+async def reset_state_node(state: ChatbotState) -> ChatbotState:
+    print("\n--- [Node] Reset State ---")
+    adaptive_optimizer.reset()  # 전역 optimizer 상태도 초기화
+    return ChatbotState(
+        question="",
+        flow_type="",
+        patient_info="",
+        decision_slack="",
+        tools_query=["", ""],
+        final_answer="",
+        slack_response="",
+        messages=state["messages"],  # 이전 messages 유지
+        current_query="",
+        query_variants=[],
+        vector_documents="",
+        llm_evaluation={},
+        loop_cnt=0,
+        optimization_completed=False,
+        should_retry_optimization=False
     )

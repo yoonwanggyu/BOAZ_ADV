@@ -35,7 +35,7 @@ async def router_agent(state: ChatbotState) -> ChatbotState:
 # 슬랙 사용 여부 판단 노드(간단한 규칙 기반으로 슬랙 사용 여부를 1차 판단하는 헬퍼 함수)
 def determine_slack_usage(query: str) -> str:
     SEND_COMMANDS = ["보내줘", "전송해줘", "전달해줘"]
-    return 'Yes' if any(cmd in query for cmd in SEND_COMMANDS) or "에게" in query else 'No'
+    return 'Yes' if any(cmd in query for cmd in SEND_COMMANDS) else 'No'
 
 # 슬랙 메시지 전송 최종 결정 노드(사용자 질문을 바탕으로 슬랙 메시지 전송이 필요한지 최종 결정하는 노드)
 async def decision_slack(state: ChatbotState):
@@ -224,6 +224,7 @@ async def merge_and_respond_node(state: ChatbotState) -> ChatbotState:
     question = state.get("question", "")
     final_answer = ""
     slack_response_text = ""
+    source_response = None
 
     try:
         # 1.평가 점수 확인 및 조건부 답변 생성
@@ -249,9 +250,9 @@ async def merge_and_respond_node(state: ChatbotState) -> ChatbotState:
             response = await model.ainvoke(prompt)
             final_answer = response.content
             print(f"Neo4j 전용 응답 생성: {final_answer[:100]}...")
-        elif evaluation_score < 0.7:
+        elif evaluation_score < 0.4:
             # 0.7 미만인 경우 피드백 기반 응답 생성
-            print("--- 피드백 기반 답변 사용(Score < 0.7) ---")
+            print("--- 피드백 기반 답변 사용(Score < 0.4) ---")
             feedback_text = evaluation.get("reasoning", "검색 결과의 품질이 낮습니다.")
             
             prompt = FEEDBACK_BASED_RESPONSE_PROMPT.format(
@@ -266,7 +267,7 @@ async def merge_and_respond_node(state: ChatbotState) -> ChatbotState:
             print(f"Feedback-based Answer Generated: {final_answer[:100]}...")
         else:
             # 0.7 이상인 경우 기존 방식으로 답변 생성
-            print("--- 정상적 답변 생성 과정(Score >= 0.7) ---")
+            print("--- 정상적 답변 생성 과정(Score >= 0.4) ---")
             prompt = LLM_SYSTEM_PROMPTY.format(
                 Neo4j=neo4j_info,
                 VectorDB=vectordb_info,
@@ -292,7 +293,7 @@ async def merge_and_respond_node(state: ChatbotState) -> ChatbotState:
             VectorDB 의학 문헌:
             {vectordb_info if vectordb_info else "없음"}
 
-            임무: 위 답변을 생성하는데 실제로 사용된 검색 결과 중 가장 관련 있는 부분을 원문 그대로 추출해주세요.
+            임무: 위 답변을 생성하는데 실제로 사용된 검색 결과 중 **가장 관련 있는 부분**을 원문 그대로 추출해주세요.
 
             출력 형식:
             - Neo4j에서 사용된 부분:
@@ -307,9 +308,16 @@ async def merge_and_respond_node(state: ChatbotState) -> ChatbotState:
             반드시 원문을 그대로 인용하고, 요약하거나 변형하지 마세요.
             
             주의사항:
-            - 줄바꿈 이스케이프 시퀀스, <div> 등의 HTML 태그는 제거하고 순수 텍스트만 추출하세요."""
+            - 줄바꿈 이스케이프 시퀀스, <div> 등의 HTML 태그는 제거하고 순수 텍스트만 추출하세요.
+            - VectorDB에서는 총 5개의 문서가 추출될 텐데, 각 문서마다 앞에 번호(예: [1], [2], [3])를 붙여서 작성해주세요.
+            """
 
             source_response = await model.ainvoke(source_extraction_prompt)
+        
+        # ✅ Slack 여부와 무관하게, 항상 붙이도록 처리
+        final_answer_source = final_answer
+        if source_response:
+            final_answer_source += "\n\n[============검색된 문서============]\n" + source_response.content
 
         # 2. 슬랙 전송 결정 여부에 따라 @멘션 로직 실행
         recipient_name = None
@@ -324,7 +332,7 @@ async def merge_and_respond_node(state: ChatbotState) -> ChatbotState:
                 raise ValueError("SLACK_CHANNEL 환경 변수가 .env 파일에 설정되지 않았습니다.")
 
             # 정교한 정규 표현식으로 수신인 이름 추출
-            match = re.search(r"(\S+)\s*(?:에게|님에게|한테)", question)
+            match = re.search(r"(\S+)\s*(?:간호사에게|간호사님에게|간호사한테)", question)
             if match:
                 recipient_name = match.group(1).strip()
             
@@ -390,7 +398,7 @@ async def merge_and_respond_node(state: ChatbotState) -> ChatbotState:
         slack_response = f"{user_name}님이 전달하는 메세지입니다." + recipient_name + text_to_send[text_to_send.index("님의 업무 보조"):]
     
     return ChatbotState(
-        final_answer=final_answer,
+        final_answer=final_answer_source,
         slack_response=slack_response,
         messages=[HumanMessage(content=question), AIMessage(content=final_answer)]
     )
