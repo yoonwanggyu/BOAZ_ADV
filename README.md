@@ -1,7 +1,7 @@
 ![header](https://capsule-render.vercel.app/api?type=Waving&color=auto&height=300&fontAlignY=50&fontAlign=50&section=header&text=땡큐소아마취&fontSize=50)
 <div align=center>
 
-**소마챗**은 소아 마취 전문 의료진의 진료 흐름에 자연스럽게 녹아들어,
+**소마챗**은 소아 마취 전문 의료진의 진료 흐름에 자연스럽게 녹아들어,<br>
 **정확성과 신뢰성**을 바탕으로 즉각적인 처치 판단을 지원하는 AI 어시스턴트입니다.
 
 1️⃣ **다양한 임상 상황에서의 질문**을 이해하고,  
@@ -86,34 +86,40 @@
 
 ## 🗂️ Database
 의료 데이터의 성격과 활용 목적에 최적화된 이중 데이터베이스 구조를 설계하였습니다.
-- 🧬 Neo4j GraphDB : 환자 중심의 임상 정보를 노드–관계 기반으로 구조화하여 저장합니다.
-- 📚 Pinecone VectorDB : 방대한 의료 지식 문서를 의미 기반으로 임베딩하여 저장합니다.
 
-### Graph Database (Neo4j)
-대한소아마취학회 APM 학회지의 Pediatric Anesthesia 증례 보고서 33건을 기반으로 구축
-<details>
-<summary> 🔍 데이터 구성 및 처리 과정 (펼쳐보기) </summary>
-• PDF → JSON 변환 후 환자 중심 정보 추출 및 정제
-• 도메인 스키마 엔티티
-	•	Person, UserSeg, Diagnosis, Surgery, AnesthesiaType, AnesthesiaAgents, Notes
-• 관계(Relations)
-	•	BELONGS_TO, HAS_DIAGNOSIS, UNDERWENT, USES, ABOUT, HAS_NOTE
-• 모든 노드는 text-embedding-3-large 모델로 256차원 벡터 임베딩
-• 유사 노드 + 1-hop 이웃 노드 검색으로 풍부한 컨텍스트 확보
-• 검색 결과는 GPT-4 기반 응답 생성 시 핵심 정보로 활용
-</details>
+1. **Graph Database (Neo4j)**  
+   : 대한소아마취학회 APM 학회지의 Pediatric Anesthesia 증례 보고서 33건을 기반으로 구축
 
-### Vector Database (Pinecone)
-Pediatric Anesthesia 논문 95건 (APM 학회지), PubMed Abstract 약 26,000건 기반 구축
-<details>
-<summary> 🔍 데이터 구성 및 처리 과정 (펼쳐보기) </summary>
-• PDF 문서는 Upstage Document Parser API를 사용해 구조적 JSON으로 변환
-• 의미 단위 중심 시퀀스 재구성 + 수작업 클린업
-• RecursiveCharacterTextSplitter 적용 (chunk size: 1000, overlap: 50)
-• 문서 메타데이터 구성: title, content, year → LangChain Document 객체화
-• text-embedding-ada-002 모델로 임베딩 후 Pinecone DB에 저장
-• 이후 LLM 검색 시 벡터 유사도 기반 근거 문서로 사용됨
-</details>
+   <p align="center">
+     <img src="pictures/23A80764-3778-4D86-A8C3-57778233B262.jpeg" alt="LangGraph flowchart" width="600"/>
+   </p>
+
+   <details>
+   <summary> 🔍 데이터 구성 및 처리 과정 (펼쳐보기) </summary>
+
+   • PDF → JSON 변환 후 환자 중심 정보 추출 및 정제  
+   • 도메인 스키마 엔티티: Person, UserSeg, Diagnosis, Surgery, AnesthesiaType, AnesthesiaAgents, Notes  
+   • 관계(Relations): BELONGS_TO, HAS_DIAGNOSIS, UNDERWENT, USES, ABOUT, HAS_NOTE  
+   • 모든 노드는 text-embedding-3-large 모델로 256차원 벡터 임베딩  
+   • 유사 노드 + 1-hop 이웃 노드 검색으로 풍부한 컨텍스트 확보  
+   • 검색 결과는 GPT-4 기반 응답 생성 시 핵심 정보로 활용  
+
+   </details>
+
+2. **Vector Database (Pinecone)**  
+   : Pediatric Anesthesia 논문 95건 (APM 학회지), PubMed Abstract 약 26,000건 기반 구축
+
+   <details>
+   <summary> 🔍 데이터 구성 및 처리 과정 (펼쳐보기) </summary>
+
+   • PDF 문서는 Upstage Document Parser API를 사용해 구조적 JSON으로 변환  
+   • 의미 단위 중심 시퀀스 재구성 + 수작업 클린업  
+   • RecursiveCharacterTextSplitter 적용 (chunk size: 1000, overlap: 50)  
+   • 문서 메타데이터 구성: title, content, year → LangChain Document 객체화  
+   • text-embedding-ada-002 모델로 임베딩 후 Pinecone DB에 저장  
+   • 이후 LLM 검색 시 벡터 유사도 기반 근거 문서로 사용됨  
+
+   </details>
 
 ## 🗺️ LangGraph Execution Flow
 <p align="center">
